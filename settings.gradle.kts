@@ -1,1 +1,1 @@
-rootProject.name = "tools"
+rootProject.name = "modjit"
