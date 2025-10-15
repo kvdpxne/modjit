@@ -9,20 +9,17 @@ import me.kvdpxne.modjit.exception.ReflectionSecurityException;
 import me.kvdpxne.modjit.util.AccessController;
 
 /**
- * An implementation of {@link MethodInvoker} that wraps a
- * {@link java.lang.reflect.Method} and provides the logic for
- * invoking the method using reflection.
+ * An implementation of {@link me.kvdpxne.modjit.acessor.MethodInvoker} that wraps a {@link java.lang.reflect.Method}
+ * and provides the logic for invoking the method using reflection.
  * <p>
- * This class handles the invocation of the underlying method,
- * manages its accessibility using the {@link AccessController},
- * and translates reflection-specific exceptions into library-specific
- * exceptions like {@link ReflectionSecurityException} or
- * {@link ReflectionException}.
+ * This class handles the invocation of the underlying method, manages its accessibility using the
+ * {@link me.kvdpxne.modjit.util.AccessController}, and translates reflection-specific exceptions into library-specific
+ * exceptions like {@link me.kvdpxne.modjit.exception.ReflectionSecurityException} or
+ * {@link me.kvdpxne.modjit.exception.ReflectionException}.
  * </p>
  * <p>
- * It ensures that the original accessibility state of the method
- * is restored after each invocation attempt, preventing security
- * warnings and potential leaks.
+ * It ensures that the original accessibility state of the method is restored after each invocation attempt, preventing
+ * security warnings and potential leaks.
  * </p>
  *
  * @author Łukasz Pietrzak (kvdpxne)
@@ -34,20 +31,18 @@ public final class MethodInvokerImpl
   MethodInvoker {
 
   /**
-   * The underlying {@link Method} object being wrapped.
+   * The underlying {@link java.lang.reflect.Method} object being wrapped.
    */
   private final Method method;
 
   /**
-   * The original accessibility state of the method before any
-   * manipulation by this library. This state is restored after each
-   * invocation to prevent security warnings.
+   * The original accessibility state of the method before any manipulation by this library. This state is restored
+   * after each invocation to prevent security warnings.
    */
   private final boolean originalAccessible;
 
   /**
-   * The fully qualified name of the class declaring the method.
-   * Used for constructing error messages.
+   * The fully qualified name of the class declaring the method. Used for constructing error messages.
    */
   private final String className;
 
@@ -55,16 +50,14 @@ public final class MethodInvokerImpl
    * Constructs a new {@code MethodInvokerImpl}.
    * <p>
    * It immediately sets the underlying method accessible using
-   * {@link AccessController#setAccessible(java.lang.reflect.AccessibleObject, boolean)}
-   * so that subsequent calls to {@link #invoke(Object, Object[])} can proceed.
-   * The original accessibility state is stored for later restoration.
+   * {@link me.kvdpxne.modjit.util.AccessController#setAccessible(java.lang.reflect.AccessibleObject, boolean)} so that
+   * subsequent calls to {@link #invoke(java.lang.Object, java.lang.Object[])} can proceed. The original accessibility
+   * state is stored for later restoration.
    * </p>
    *
-   * @param method            The {@link Method} to wrap. Must not be {@code null}.
-   * @param originalAccessible {@code true} if the method was originally
-   *                          accessible, {@code false} otherwise.
-   * @param className         The name of the class declaring the method.
-   *                          Used for error messages. Must not be {@code null}.
+   * @param method The {@link java.lang.reflect.Method} to wrap. Must not be {@code null}.
+   * @param originalAccessible {@code true} if the method was originally accessible, {@code false} otherwise.
+   * @param className The name of the class declaring the method. Used for error messages. Must not be {@code null}.
    */
   public MethodInvokerImpl(
     final Method method,
@@ -80,33 +73,27 @@ public final class MethodInvokerImpl
   }
 
   /**
-   * Invokes the underlying method on the specified target object with the
-   * provided parameters.
+   * Invokes the underlying method on the specified target object with the provided parameters.
    * <p>
-   * It uses {@link Method#invoke(Object, Object...)} to perform the
-   * invocation. If the {@code parameters} array is {@code null},
-   * it calls the method with no arguments. Otherwise, it passes
-   * the provided parameters.
+   * It uses {@link java.lang.reflect.Method#invoke(java.lang.Object, java.lang.Object...)} to perform the invocation.
+   * If the {@code parameters} array is {@code null}, it calls the method with no arguments. Otherwise, it passes the
+   * provided parameters.
    * </p>
    * <p>
-   * After the invocation attempt (successful or not), it restores the
-   * method's accessibility to its original state if it was not
-   * originally accessible.
+   * After the invocation attempt (successful or not), it restores the method's accessibility to its original state if
+   * it was not originally accessible.
    * </p>
    *
-   * @param target     The object on which to invoke the method. For static
-   *                   methods, this parameter can be {@code null}.
-   * @param parameters An array of objects representing the arguments to pass
-   *                   to the method. If the method takes no arguments,
-   *                   an empty array ({@code new Object[0]}) should be passed.
-   *                   Passing {@code null} will result in a call to the
-   *                   no-argument method.
-   * @return The return value of the method invocation. If the method has a
-   *     {@code void} return type, this will be {@code null}.
-   * @throws ReflectionSecurityException if the underlying method is
-   *     not accessible and cannot be made accessible during invocation.
-   * @throws ReflectionException if an error occurs during the method
-   *     invocation, such as an exception thrown by the invoked method itself.
+   * @param target The object on which to invoke the method. For static methods, this parameter can be {@code null}.
+   * @param parameters An array of objects representing the arguments to pass to the method. If the method takes no
+   *   arguments, an empty array ({@code new Object[0]}) should be passed. Passing {@code null} will result in a call to
+   *   the no-argument method.
+   * @return The return value of the method invocation. If the method has a {@code void} return type, this will be
+   *   {@code null}.
+   * @throws me.kvdpxne.modjit.exception.ReflectionSecurityException if the underlying method is not accessible and
+   *   cannot be made accessible during invocation.
+   * @throws me.kvdpxne.modjit.exception.ReflectionException if an error occurs during the method invocation, such as
+   *   an exception thrown by the invoked method itself.
    */
   @Override
   public Object invoke(
@@ -139,9 +126,8 @@ public final class MethodInvokerImpl
   }
 
   /**
-   * Compares this {@code MethodInvokerImpl} with another object for equality.
-   * Two instances are considered equal if they wrap the same underlying
-   * {@link Method}, have the same original accessibility state, and
+   * Compares this {@code MethodInvokerImpl} with another object for equality. Two instances are considered equal if
+   * they wrap the same underlying {@link java.lang.reflect.Method}, have the same original accessibility state, and
    * belong to the same class (based on the class name).
    *
    * @param o the object to compare with
@@ -161,9 +147,8 @@ public final class MethodInvokerImpl
   }
 
   /**
-   * Returns the hash code value for this {@code MethodInvokerImpl}.
-   * The hash code is computed based on the underlying method, the
-   * original accessibility state, and the class name.
+   * Returns the hash code value for this {@code MethodInvokerImpl}. The hash code is computed based on the underlying
+   * method, the original accessibility state, and the class name.
    *
    * @return the hash code value for this instance
    */

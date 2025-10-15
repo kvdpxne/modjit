@@ -4,13 +4,12 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * Represents a key used for caching method invokers in the reflection library.
+ * Represents a key for caching method accessors within the reflection library.
  * <p>
- * This class holds the identifying information for a specific method:
- * the name of the class it belongs to, the method's name, the names of its
- * parameter types, and the name of its return type. It is designed to be used
- * as a key in a map-based cache, providing appropriate implementations of
- * {@link #equals(Object)} and {@link #hashCode()}.
+ * This class encapsulates the identifying attributes of a specific method: the fully qualified name of the declaring
+ * class, the simple name of the method, an array of strings representing the fully qualified names of its parameter
+ * types, the fully qualified name of its return type, and its modifiers. It is designed for use as a key in a map-based
+ * cache, providing consistent implementations of {@link #equals(java.lang.Object)} and {@link #hashCode()}.
  * </p>
  *
  * @author Łukasz Pietrzak (kvdpxne)
@@ -20,56 +19,59 @@ import java.util.Objects;
 public final class MethodKey {
 
   /**
-   * The fully qualified name of the class declaring the method.
+   * The fully qualified name of the class declaring the associated method.
    */
   private final String className;
 
   /**
-   * The simple name of the method.
+   * The simple name of the associated method.
    */
   private final String methodName;
 
   /**
-   * An array of strings representing the fully qualified names of the
-   * method's parameter types. Can be {@code null} if parameter types
-   * are not specified or relevant for caching.
+   * An array of strings representing the fully qualified names of the parameter types for the associated method. This
+   * can be {@code null} if parameter types were not part of the caching criteria.
    */
   private final String[] parameterTypes;
 
   /**
-   * The fully qualified name of the method's return type. Can be {@code null}
-   * if the return type was not specified during key creation.
+   * The fully qualified name of the return type of the associated method. This can be {@code null} if the return type
+   * was not part of the caching criteria.
    */
   private final String returnType;
 
   /**
-   * Constructs a new {@code MethodKey} with the specified class name,
-   * method name, parameter type names, and return type name.
+   * The modifiers of the associated method, as defined by {@link java.lang.reflect.Modifier}.
+   */
+  private final int modifiers;
+
+  /**
+   * Constructs a new {@code MethodKey} instance.
    *
-   * @param className      The fully qualified name of the declaring class.
-   *                       Must not be {@code null}.
-   * @param methodName     The simple name of the method. Must not be {@code null}.
-   * @param parameterTypes An array of strings representing the parameter
-   *                       type names. Can be {@code null} if parameter types
-   *                       are not relevant for caching.
-   * @param returnType     The fully qualified name of the method's return type.
-   *                       Can be {@code null} if the return type is not relevant
-   *                       for caching.
+   * @param className The fully qualified name of the class declaring the method. Must not be {@code null}.
+   * @param methodName The simple name of the method. Must not be {@code null}.
+   * @param parameterTypes An array of strings representing the fully qualified names of the method's parameter types.
+   *   Can be {@code null} if parameter types are not part of the caching criteria.
+   * @param returnType The fully qualified name of the method's return type. Can be {@code null} if the return type is
+   *   not part of the caching criteria.
+   * @param modifiers The modifiers of the method.
    */
   public MethodKey(
     final String className,
     final String methodName,
     final String[] parameterTypes,
-    final String returnType
+    final String returnType,
+    final int modifiers
   ) {
     this.className = className;
     this.methodName = methodName;
     this.parameterTypes = parameterTypes;
     this.returnType = returnType;
+    this.modifiers = modifiers;
   }
 
   /**
-   * Gets the fully qualified name of the class declaring the method.
+   * Retrieves the fully qualified name of the class declaring the associated method.
    *
    * @return The class name.
    */
@@ -78,7 +80,7 @@ public final class MethodKey {
   }
 
   /**
-   * Gets the simple name of the method.
+   * Retrieves the simple name of the associated method.
    *
    * @return The method name.
    */
@@ -87,18 +89,17 @@ public final class MethodKey {
   }
 
   /**
-   * Gets the array of strings representing the fully qualified names of the
-   * method's parameter types.
+   * Retrieves the array of strings representing the fully qualified names of the associated method's parameter types.
    *
-   * @return The parameter type names array. Can be {@code null} if parameter
-   * types are not specified.
+   * @return The parameter type names array. Can be {@code null} if parameter types are not part of the caching
+   *   criteria.
    */
   public String[] getParameterTypes() {
     return this.parameterTypes;
   }
 
   /**
-   * Gets the fully qualified name of the method's return type.
+   * Retrieves the fully qualified name of the return type of the associated method.
    *
    * @return The return type name, or {@code null} if not specified.
    */
@@ -107,10 +108,18 @@ public final class MethodKey {
   }
 
   /**
-   * Compares this {@code MethodKey} with another object for equality.
-   * Two instances are considered equal if their class names, method names,
-   * parameter type arrays (compared deeply), and return types are all equal
-   * according to {@link Objects#equals(Object, Object)}.
+   * Retrieves the modifiers of the associated method.
+   *
+   * @return The modifiers.
+   */
+  public int getModifiers() {
+    return this.modifiers;
+  }
+
+  /**
+   * Compares this {@code MethodKey} with another object for equality. Two instances are considered equal if their class
+   * names, method names, parameter type arrays (compared deeply), and return types are all equal according to
+   * {@link java.util.Objects#equals(java.lang.Object, java.lang.Object)}.
    *
    * @param o the object to compare with
    * @return {@code true} if the objects are equal, {@code false} otherwise
@@ -122,18 +131,18 @@ public final class MethodKey {
     if (null == o || this.getClass() != o.getClass()) {
       return false;
     }
-    final MethodKey methodKey = (MethodKey) o;
-    return Objects.equals(this.className, methodKey.className)
-      && Objects.equals(this.methodName, methodKey.methodName)
-      && Objects.deepEquals(this.parameterTypes, methodKey.parameterTypes)
-      && Objects.equals(this.returnType, methodKey.returnType);
+    final MethodKey that = (MethodKey) o;
+    return this.modifiers == that.modifiers
+      && Objects.equals(this.className, that.className)
+      && Objects.equals(this.methodName, that.methodName)
+      && Objects.deepEquals(this.parameterTypes, that.parameterTypes)
+      && Objects.equals(this.returnType, that.returnType);
   }
 
   /**
-   * Returns the hash code value for this {@code MethodKey}.
-   * The hash code is computed based on the class name, method name,
-   * the hash code of the parameter types array (using {@link Arrays#hashCode(Object[])}),
-   * and the return type.
+   * Returns the hash code value for this {@code MethodKey}. The hash code is computed based on the class name, method
+   * name, the hash code of the parameter types array (using {@link java.util.Arrays#hashCode(java.lang.Object[])}), and
+   * the return type.
    *
    * @return the hash code value for this instance
    */
@@ -143,7 +152,8 @@ public final class MethodKey {
       this.className,
       this.methodName,
       Arrays.hashCode(this.parameterTypes),
-      this.returnType
+      this.returnType,
+      this.modifiers
     );
   }
 }
