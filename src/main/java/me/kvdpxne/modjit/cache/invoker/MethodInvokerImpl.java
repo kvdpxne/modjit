@@ -3,13 +3,13 @@ package me.kvdpxne.modjit.cache.invoker;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Objects;
-import me.kvdpxne.modjit.acessor.MethodInvoker;
+import me.kvdpxne.modjit.accessor.MethodInvoker;
 import me.kvdpxne.modjit.exception.ReflectionException;
 import me.kvdpxne.modjit.exception.ReflectionSecurityException;
 import me.kvdpxne.modjit.util.AccessController;
 
 /**
- * An implementation of {@link me.kvdpxne.modjit.acessor.MethodInvoker} that wraps a {@link java.lang.reflect.Method}
+ * An implementation of {@link me.kvdpxne.modjit.accessor.MethodInvoker} that wraps a {@link java.lang.reflect.Method}
  * and provides the logic for invoking the method using reflection.
  * <p>
  * This class handles the invocation of the underlying method, manages its accessibility using the

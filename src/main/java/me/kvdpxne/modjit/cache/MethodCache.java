@@ -2,7 +2,7 @@ package me.kvdpxne.modjit.cache;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import me.kvdpxne.modjit.acessor.MethodInvoker;
+import me.kvdpxne.modjit.accessor.MethodInvoker;
 import me.kvdpxne.modjit.cache.invoker.MethodInvokerImpl;
 import me.kvdpxne.modjit.cache.key.MethodKey;
 import me.kvdpxne.modjit.exception.MethodNotFoundReflectionException;
@@ -11,13 +11,14 @@ import me.kvdpxne.modjit.util.ArrayMapper;
 
 /**
  * A specialized {@link me.kvdpxne.modjit.cache.ReflectionCache} for caching
- * {@link me.kvdpxne.modjit.acessor.MethodInvoker} objects. It computes and caches
+ * {@link me.kvdpxne.modjit.accessor.MethodInvoker} objects. It computes and caches
  * {@link me.kvdpxne.modjit.cache.invoker.MethodInvokerImpl} instances based on a
  * {@link me.kvdpxne.modjit.cache.key.MethodKey}.
  * <p>
  * This cache ensures that the lookup and preparation of methods via {@link java.lang.Class#getDeclaredMethods()} and
- * the creation of the corresponding {@link me.kvdpxne.modjit.acessor.MethodInvoker} are performed only once for a given
- * class, method name, parameter signature, and optional return type, improving performance for repeated accesses.
+ * the creation of the corresponding {@link me.kvdpxne.modjit.accessor.MethodInvoker} are performed only once for a
+ * given class, method name, parameter signature, and optional return type, improving performance for repeated
+ * accesses.
  * </p>
  *
  * @author Łukasz Pietrzak (kvdpxne)
@@ -118,7 +119,7 @@ public final class MethodCache
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.MethodInvoker} from the cache or computes it if not present.
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.MethodInvoker} from the cache or computes it if not present.
    * <p>
    * The cache key is constructed using the class name, method name, the names of the parameter types (if provided), the
    * return type name (if provided), and the modifiers. The computation is performed by the internal
@@ -133,7 +134,7 @@ public final class MethodCache
    * @param returnType The expected return type of the method. Can be {@code null} if the return type is not part of
    *   the search criteria.
    * @param modifiers The required modifiers for the method. Use {@code 0} to ignore modifiers.
-   * @return The cached or newly computed {@link me.kvdpxne.modjit.acessor.MethodInvoker} for the specified method.
+   * @return The cached or newly computed {@link me.kvdpxne.modjit.accessor.MethodInvoker} for the specified method.
    * @throws me.kvdpxne.modjit.exception.MethodNotFoundReflectionException if no method with the specified name,
    *   parameter types (if provided), return type (if provided), and modifiers (if non-zero) is found in the class.
    * @throws java.lang.NullPointerException if {@code clazz} is {@code null}.

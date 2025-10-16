@@ -1,13 +1,14 @@
 plugins {
   id("java")
+  id("maven-publish")
 }
 
+description = ""
 group = "me.kvdpxne"
-version = "1.0-SNAPSHOT"
+version = "0.1.0"
 
-repositories {
-  mavenCentral()
-}
+val targetJavaVersion = 8
+val javaVersion = JavaVersion.toVersion(targetJavaVersion)
 
 dependencies {
   testImplementation(platform("org.junit:junit-bom:5.10.0"))
@@ -15,6 +16,30 @@ dependencies {
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-tasks.test {
-  useJUnitPlatform()
+java {
+  if (JavaVersion.current() < javaVersion) {
+    toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+  }
+
+  sourceCompatibility = javaVersion
+  targetCompatibility = javaVersion
+}
+
+publishing {
+  publications {
+    create<MavenPublication>("maven") {
+      artifactId = project.name
+      groupId = project.group.toString()
+      version = project.version.toString()
+
+      from(components["java"])
+    }
+  }
+}
+
+tasks {
+
+  withType<Test> {
+    useJUnitPlatform()
+  }
 }

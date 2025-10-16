@@ -38,10 +38,6 @@ public final class Validation {
   private static boolean isBlank(
     final String str
   ) {
-    if (11 <= AccessController.JAVA_VERSION) {
-      // noinspection Since15
-      return str.isBlank();
-    }
     int size = 0;
     for (int i = 0; str.length() > i; ++i) {
       if (Character.isWhitespace(str.charAt(i))) {

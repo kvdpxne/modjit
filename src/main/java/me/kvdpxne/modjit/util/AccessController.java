@@ -110,10 +110,10 @@ public final class AccessController {
     final AccessibleObject member,
     final Object target
   ) {
-    if (9 <= JAVA_VERSION) {
-      // noinspection Since15
-      return member.canAccess(target);
-    }
+//    if (9 <= JAVA_VERSION) {
+//      // noinspection Since15
+//      return member.canAccess(target);
+//    }
     return member.isAccessible();
   }
 

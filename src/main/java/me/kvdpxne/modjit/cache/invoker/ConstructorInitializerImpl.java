@@ -3,13 +3,13 @@ package me.kvdpxne.modjit.cache.invoker;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
-import me.kvdpxne.modjit.acessor.ConstructorInitializer;
+import me.kvdpxne.modjit.accessor.ConstructorInitializer;
 import me.kvdpxne.modjit.exception.ReflectionException;
 import me.kvdpxne.modjit.exception.ReflectionSecurityException;
 import me.kvdpxne.modjit.util.AccessController;
 
 /**
- * An implementation of {@link me.kvdpxne.modjit.acessor.ConstructorInitializer} that wraps a
+ * An implementation of {@link me.kvdpxne.modjit.accessor.ConstructorInitializer} that wraps a
  * {@link java.lang.reflect.Constructor} and provides the logic for creating new instances using reflection.
  * <p>
  * This class handles the invocation of the underlying constructor, manages its accessibility using the

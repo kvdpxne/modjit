@@ -1,7 +1,7 @@
 package me.kvdpxne.modjit.cache;
 
 import java.lang.reflect.Field;
-import me.kvdpxne.modjit.acessor.FieldAccessor;
+import me.kvdpxne.modjit.accessor.FieldAccessor;
 import me.kvdpxne.modjit.cache.invoker.FieldAccessorImpl;
 import me.kvdpxne.modjit.cache.key.FieldKey;
 import me.kvdpxne.modjit.exception.FieldNotFoundReflectionException;
@@ -9,12 +9,12 @@ import me.kvdpxne.modjit.util.AccessController;
 
 /**
  * A specialized {@link me.kvdpxne.modjit.cache.ReflectionCache} for caching
- * {@link me.kvdpxne.modjit.acessor.FieldAccessor} objects. It computes and caches
+ * {@link me.kvdpxne.modjit.accessor.FieldAccessor} objects. It computes and caches
  * {@link me.kvdpxne.modjit.cache.invoker.FieldAccessorImpl} instances based on a
  * {@link me.kvdpxne.modjit.cache.key.FieldKey}.
  * <p>
  * This cache ensures that the lookup and preparation of fields via {@link java.lang.Class#getDeclaredFields()} and the
- * creation of the corresponding {@link me.kvdpxne.modjit.acessor.FieldAccessor} are performed only once for a given
+ * creation of the corresponding {@link me.kvdpxne.modjit.accessor.FieldAccessor} are performed only once for a given
  * class, field name, optional field type, and modifiers, improving performance for repeated accesses.
  * </p>
  *
@@ -106,7 +106,7 @@ public final class FieldCache
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.FieldAccessor} from the cache or computes it if not present.
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.FieldAccessor} from the cache or computes it if not present.
    * <p>
    * The cache key is constructed using the class name, field name, the field type name (if provided), and the
    * modifiers. The computation is performed by the internal
@@ -118,7 +118,7 @@ public final class FieldCache
    *   criteria.
    * @param type The expected type of the field. Can be {@code null} if the type is not part of the search criteria.
    * @param modifiers The required modifiers for the field. Use {@code 0} to ignore modifiers.
-   * @return The cached or newly computed {@link me.kvdpxne.modjit.acessor.FieldAccessor} for the specified field.
+   * @return The cached or newly computed {@link me.kvdpxne.modjit.accessor.FieldAccessor} for the specified field.
    * @throws me.kvdpxne.modjit.exception.FieldNotFoundReflectionException if no field with the specified name (and
    *   type/modifiers if provided/non-zero) is found in the class.
    * @throws java.lang.NullPointerException if {@code clazz} is {@code null}.

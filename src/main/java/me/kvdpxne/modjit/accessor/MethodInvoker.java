@@ -1,4 +1,4 @@
-package me.kvdpxne.modjit.acessor;
+package me.kvdpxne.modjit.accessor;
 
 /**
  * Defines the contract for invoking methods on objects using reflection. Implementations of this interface handle the

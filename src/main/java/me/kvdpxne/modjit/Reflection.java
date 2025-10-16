@@ -1,9 +1,9 @@
 package me.kvdpxne.modjit;
 
 import java.lang.reflect.Modifier;
-import me.kvdpxne.modjit.acessor.ConstructorInitializer;
-import me.kvdpxne.modjit.acessor.FieldAccessor;
-import me.kvdpxne.modjit.acessor.MethodInvoker;
+import me.kvdpxne.modjit.accessor.ConstructorInitializer;
+import me.kvdpxne.modjit.accessor.FieldAccessor;
+import me.kvdpxne.modjit.accessor.MethodInvoker;
 import me.kvdpxne.modjit.cache.ClassCache;
 import me.kvdpxne.modjit.cache.ConstructorCache;
 import me.kvdpxne.modjit.cache.FieldCache;
@@ -17,9 +17,9 @@ import static me.kvdpxne.modjit.util.Validation.requireNotNull;
  * <p>
  * This utility class abstracts the complexities of direct reflection usage (e.g., {@link java.lang.reflect.Field},
  * {@link java.lang.reflect.Method}, {@link java.lang.reflect.Constructor}). It offers methods to retrieve cached
- * {@link java.lang.Class} objects, {@link me.kvdpxne.modjit.acessor.FieldAccessor} instances for field access,
- * {@link me.kvdpxne.modjit.acessor.MethodInvoker} instances for method invocation, and
- * {@link me.kvdpxne.modjit.acessor.ConstructorInitializer} instances for object creation.
+ * {@link java.lang.Class} objects, {@link me.kvdpxne.modjit.accessor.FieldAccessor} instances for field access,
+ * {@link me.kvdpxne.modjit.accessor.MethodInvoker} instances for method invocation, and
+ * {@link me.kvdpxne.modjit.accessor.ConstructorInitializer} instances for object creation.
  * </p>
  * <p>
  * All reflection operations are performed through internal caches ({@link me.kvdpxne.modjit.cache.ClassCache},
@@ -83,8 +83,8 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.FieldAccessor} for a field in the specified class, optionally matching
-   * its type and modifiers.
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.FieldAccessor} for a field in the specified class, optionally
+   * matching its type and modifiers.
    * <p>
    * The field is looked up using {@link java.lang.Class#getDeclaredField(java.lang.String)} and its corresponding
    * {@code FieldAccessor} is cached for subsequent calls with the same class, field name, and type combination.
@@ -97,7 +97,7 @@ public final class Reflection {
    *   criteria.
    * @param modifiers The required modifiers for the field, as defined by
    *   {@link java.lang.reflect.Modifier#fieldModifiers()}. Use {@code 0} to ignore modifiers.
-   * @return A {@link me.kvdpxne.modjit.acessor.FieldAccessor} for the specified field.
+   * @return A {@link me.kvdpxne.modjit.accessor.FieldAccessor} for the specified field.
    * @throws me.kvdpxne.modjit.exception.FieldNotFoundReflectionException if the field is not found in the specified
    *   class with the given name, type, and modifiers.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null}, {@code fieldName} is blank when
@@ -122,7 +122,7 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.FieldAccessor} for a field in the specified class, matching its name
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.FieldAccessor} for a field in the specified class, matching its name
    * and type.
    * <p>
    * This is a convenience method equivalent to calling
@@ -133,7 +133,7 @@ public final class Reflection {
    * @param fieldName The simple name of the field to find. Must not be blank.
    * @param fieldType The expected type of the field. Can be {@code null} if the type is not part of the search
    *   criteria.
-   * @return A {@link me.kvdpxne.modjit.acessor.FieldAccessor} for the specified field.
+   * @return A {@link me.kvdpxne.modjit.accessor.FieldAccessor} for the specified field.
    * @throws me.kvdpxne.modjit.exception.FieldNotFoundReflectionException if the field is not found in the specified
    *   class with the given name and type.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null} or {@code fieldName} is blank.
@@ -147,7 +147,7 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.FieldAccessor} for a field in the specified class, matching its name
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.FieldAccessor} for a field in the specified class, matching its name
    * and modifiers.
    * <p>
    * This is a convenience method equivalent to calling
@@ -158,7 +158,7 @@ public final class Reflection {
    * @param fieldName The simple name of the field to find. Must not be blank if modifiers are zero.
    * @param modifiers The required modifiers for the field, as defined by
    *   {@link java.lang.reflect.Modifier#fieldModifiers()}. Use {@code 0} to ignore modifiers.
-   * @return A {@link me.kvdpxne.modjit.acessor.FieldAccessor} for the specified field.
+   * @return A {@link me.kvdpxne.modjit.accessor.FieldAccessor} for the specified field.
    * @throws me.kvdpxne.modjit.exception.FieldNotFoundReflectionException if the field is not found in the specified
    *   class with the given name and modifiers.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null}, {@code fieldName} is blank when
@@ -173,7 +173,7 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.FieldAccessor} for a field in the specified class, matching its type
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.FieldAccessor} for a field in the specified class, matching its type
    * and modifiers.
    * <p>
    * This is a convenience method equivalent to calling
@@ -184,7 +184,7 @@ public final class Reflection {
    * @param fieldType The expected type of the field. Must not be {@code null} if modifiers are zero.
    * @param modifiers The required modifiers for the field, as defined by
    *   {@link java.lang.reflect.Modifier#fieldModifiers()}. Use {@code 0} to ignore modifiers.
-   * @return A {@link me.kvdpxne.modjit.acessor.FieldAccessor} for the specified field.
+   * @return A {@link me.kvdpxne.modjit.accessor.FieldAccessor} for the specified field.
    * @throws me.kvdpxne.modjit.exception.FieldNotFoundReflectionException if the field is not found in the specified
    *   class with the given type and modifiers.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null}, {@code fieldType} is {@code null}
@@ -199,7 +199,8 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.FieldAccessor} for a field in the specified class, matching its name.
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.FieldAccessor} for a field in the specified class, matching its
+   * name.
    * <p>
    * This is a convenience method equivalent to calling
    * {@link #getField(java.lang.Class, java.lang.String, java.lang.Class, int)} with {@code fieldType} as {@code null}
@@ -208,7 +209,7 @@ public final class Reflection {
    *
    * @param clazz The class in which to find the field. Must not be {@code null}.
    * @param fieldName The simple name of the field to find. Must not be blank.
-   * @return A {@link me.kvdpxne.modjit.acessor.FieldAccessor} for the specified field.
+   * @return A {@link me.kvdpxne.modjit.accessor.FieldAccessor} for the specified field.
    * @throws me.kvdpxne.modjit.exception.FieldNotFoundReflectionException if the field is not found in the specified
    *   class with the given name.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null} or {@code fieldName} is blank.
@@ -221,7 +222,8 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.FieldAccessor} for a field in the specified class, matching its type.
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.FieldAccessor} for a field in the specified class, matching its
+   * type.
    * <p>
    * This is a convenience method equivalent to calling
    * {@link #getField(java.lang.Class, java.lang.String, java.lang.Class, int)} with {@code fieldName} as {@code null}
@@ -230,7 +232,7 @@ public final class Reflection {
    *
    * @param clazz The class in which to find the field. Must not be {@code null}.
    * @param fieldType The expected type of the field.
-   * @return A {@link me.kvdpxne.modjit.acessor.FieldAccessor} for the specified field.
+   * @return A {@link me.kvdpxne.modjit.accessor.FieldAccessor} for the specified field.
    * @throws me.kvdpxne.modjit.exception.FieldNotFoundReflectionException if the field is not found in the specified
    *   class with the given type.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null}.
@@ -243,7 +245,7 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.FieldAccessor} for a field in the specified class, matching its
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.FieldAccessor} for a field in the specified class, matching its
    * modifiers.
    * <p>
    * This is a convenience method equivalent to calling
@@ -254,7 +256,7 @@ public final class Reflection {
    * @param clazz The class in which to find the field. Must not be {@code null}.
    * @param modifiers The required modifiers for the field, as defined by
    *   {@link java.lang.reflect.Modifier#fieldModifiers()}. Must not be zero.
-   * @return A {@link me.kvdpxne.modjit.acessor.FieldAccessor} for the specified field.
+   * @return A {@link me.kvdpxne.modjit.accessor.FieldAccessor} for the specified field.
    * @throws me.kvdpxne.modjit.exception.FieldNotFoundReflectionException if the field is not found in the specified
    *   class with the given modifiers.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null}, {@code modifiers} is zero, or
@@ -268,8 +270,8 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.MethodInvoker} for a method in the specified class, matching its name,
-   * parameter types, return type, and modifiers.
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.MethodInvoker} for a method in the specified class, matching its
+   * name, parameter types, return type, and modifiers.
    * <p>
    * The method is looked up using {@link java.lang.Class#getDeclaredMethod(java.lang.String, java.lang.Class[])} (or
    * similar logic for declared methods) and its corresponding {@code MethodInvoker} is cached for subsequent calls with
@@ -285,7 +287,7 @@ public final class Reflection {
    *   the search criteria.
    * @param modifiers The required modifiers for the method, as defined by
    *   {@link java.lang.reflect.Modifier#methodModifiers()}. Use {@code 0} to ignore modifiers.
-   * @return A {@link me.kvdpxne.modjit.acessor.MethodInvoker} for the specified method.
+   * @return A {@link me.kvdpxne.modjit.accessor.MethodInvoker} for the specified method.
    * @throws me.kvdpxne.modjit.exception.MethodNotFoundReflectionException if the method is not found in the specified
    *   class with the given name, parameter types, return type, and modifiers.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null}, {@code methodName} is blank when
@@ -311,8 +313,8 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.MethodInvoker} for a method in the specified class, matching its name,
-   * parameter types, and return type.
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.MethodInvoker} for a method in the specified class, matching its
+   * name, parameter types, and return type.
    * <p>
    * This is a convenience method equivalent to calling
    * {@link #getMethod(java.lang.Class, java.lang.String, java.lang.Class[], java.lang.Class, int)} with
@@ -325,7 +327,7 @@ public final class Reflection {
    *   Can be {@code null} if the method takes no parameters or if parameter types are not part of the search criteria.
    * @param returnType The expected return type of the method. Can be {@code null} if the return type is not part of
    *   the search criteria.
-   * @return A {@link me.kvdpxne.modjit.acessor.MethodInvoker} for the specified method.
+   * @return A {@link me.kvdpxne.modjit.accessor.MethodInvoker} for the specified method.
    * @throws me.kvdpxne.modjit.exception.MethodNotFoundReflectionException if the method is not found in the specified
    *   class with the given name, parameter types, and return type.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null} or {@code methodName} is blank.
@@ -340,8 +342,8 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.MethodInvoker} for a method in the specified class, matching its name,
-   * parameter types, and modifiers.
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.MethodInvoker} for a method in the specified class, matching its
+   * name, parameter types, and modifiers.
    * <p>
    * This is a convenience method equivalent to calling
    * {@link #getMethod(java.lang.Class, java.lang.String, java.lang.Class[], java.lang.Class, int)} with
@@ -354,7 +356,7 @@ public final class Reflection {
    *   Can be {@code null} if the method takes no parameters or if parameter types are not part of the search criteria.
    * @param modifiers The required modifiers for the method, as defined by
    *   {@link java.lang.reflect.Modifier#methodModifiers()}. Use {@code 0} to ignore modifiers.
-   * @return A {@link me.kvdpxne.modjit.acessor.MethodInvoker} for the specified method.
+   * @return A {@link me.kvdpxne.modjit.accessor.MethodInvoker} for the specified method.
    * @throws me.kvdpxne.modjit.exception.MethodNotFoundReflectionException if the method is not found in the specified
    *   class with the given name, parameter types, and modifiers.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null}, {@code methodName} is blank when
@@ -370,8 +372,8 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.MethodInvoker} for a method in the specified class, matching its name,
-   * return type, and modifiers.
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.MethodInvoker} for a method in the specified class, matching its
+   * name, return type, and modifiers.
    * <p>
    * This is a convenience method equivalent to calling
    * {@link #getMethod(java.lang.Class, java.lang.String, java.lang.Class[], java.lang.Class, int)} with
@@ -384,7 +386,7 @@ public final class Reflection {
    *   the search criteria.
    * @param modifiers The required modifiers for the method, as defined by
    *   {@link java.lang.reflect.Modifier#methodModifiers()}. Use {@code 0} to ignore modifiers.
-   * @return A {@link me.kvdpxne.modjit.acessor.MethodInvoker} for the specified method.
+   * @return A {@link me.kvdpxne.modjit.accessor.MethodInvoker} for the specified method.
    * @throws me.kvdpxne.modjit.exception.MethodNotFoundReflectionException if the method is not found in the specified
    *   class with the given name, return type, and modifiers.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null}, {@code methodName} is blank when
@@ -400,7 +402,7 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.MethodInvoker} for a method in the specified class, matching its
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.MethodInvoker} for a method in the specified class, matching its
    * parameter types, return type, and modifiers.
    * <p>
    * This is a convenience method equivalent to calling
@@ -415,7 +417,7 @@ public final class Reflection {
    *   the search criteria.
    * @param modifiers The required modifiers for the method, as defined by
    *   {@link java.lang.reflect.Modifier#methodModifiers()}. Use {@code 0} to ignore modifiers.
-   * @return A {@link me.kvdpxne.modjit.acessor.MethodInvoker} for the specified method.
+   * @return A {@link me.kvdpxne.modjit.accessor.MethodInvoker} for the specified method.
    * @throws me.kvdpxne.modjit.exception.MethodNotFoundReflectionException if the method is not found in the specified
    *   class with the given parameter types, return type, and modifiers.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null}, {@code parameterTypes} is
@@ -432,7 +434,7 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.MethodInvoker} for a method in the specified class, matching its name
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.MethodInvoker} for a method in the specified class, matching its name
    * and parameter types.
    * <p>
    * This is a convenience method equivalent to calling
@@ -444,7 +446,7 @@ public final class Reflection {
    * @param methodName The simple name of the method to find. Must not be blank.
    * @param parameterTypes An array of {@link java.lang.Class} objects representing the parameter types of the method.
    *   Can be {@code null} if the method takes no parameters or if parameter types are not part of the search criteria.
-   * @return A {@link me.kvdpxne.modjit.acessor.MethodInvoker} for the specified method.
+   * @return A {@link me.kvdpxne.modjit.accessor.MethodInvoker} for the specified method.
    * @throws me.kvdpxne.modjit.exception.MethodNotFoundReflectionException if the method is not found in the specified
    *   class with the given name and parameter types.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null} or {@code methodName} is blank.
@@ -458,7 +460,7 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.MethodInvoker} for a method in the specified class, matching its name
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.MethodInvoker} for a method in the specified class, matching its name
    * and return type.
    * <p>
    * This is a convenience method equivalent to calling
@@ -470,7 +472,7 @@ public final class Reflection {
    * @param methodName The simple name of the method to find. Must not be blank.
    * @param returnType The expected return type of the method. Can be {@code null} if the return type is not part of
    *   the search criteria.
-   * @return A {@link me.kvdpxne.modjit.acessor.MethodInvoker} for the specified method.
+   * @return A {@link me.kvdpxne.modjit.accessor.MethodInvoker} for the specified method.
    * @throws me.kvdpxne.modjit.exception.MethodNotFoundReflectionException if the method is not found in the specified
    *   class with the given name and return type.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null} or {@code methodName} is blank.
@@ -484,7 +486,7 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.MethodInvoker} for a method in the specified class, matching its name
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.MethodInvoker} for a method in the specified class, matching its name
    * and modifiers.
    * <p>
    * This is a convenience method equivalent to calling
@@ -496,7 +498,7 @@ public final class Reflection {
    * @param methodName The simple name of the method to find. Must not be blank if modifiers are zero.
    * @param modifiers The required modifiers for the method, as defined by
    *   {@link java.lang.reflect.Modifier#methodModifiers()}. Use {@code 0} to ignore modifiers.
-   * @return A {@link me.kvdpxne.modjit.acessor.MethodInvoker} for the specified method.
+   * @return A {@link me.kvdpxne.modjit.accessor.MethodInvoker} for the specified method.
    * @throws me.kvdpxne.modjit.exception.MethodNotFoundReflectionException if the method is not found in the specified
    *   class with the given name and modifiers.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null}, {@code methodName} is blank when
@@ -511,7 +513,7 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.MethodInvoker} for a method in the specified class, matching its
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.MethodInvoker} for a method in the specified class, matching its
    * parameter types and return type.
    * <p>
    * This is a convenience method equivalent to calling
@@ -524,7 +526,7 @@ public final class Reflection {
    *   Must not be {@code null}.
    * @param returnType The expected return type of the method. Can be {@code null} if the return type is not part of
    *   the search criteria.
-   * @return A {@link me.kvdpxne.modjit.acessor.MethodInvoker} for the specified method.
+   * @return A {@link me.kvdpxne.modjit.accessor.MethodInvoker} for the specified method.
    * @throws me.kvdpxne.modjit.exception.MethodNotFoundReflectionException if the method is not found in the specified
    *   class with the given parameter types and return type.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null} or {@code parameterTypes} is
@@ -539,7 +541,7 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.MethodInvoker} for a method in the specified class, matching its
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.MethodInvoker} for a method in the specified class, matching its
    * parameter types and modifiers.
    * <p>
    * This is a convenience method equivalent to calling
@@ -552,7 +554,7 @@ public final class Reflection {
    *   Must not be {@code null} if modifiers are zero.
    * @param modifiers The required modifiers for the method, as defined by
    *   {@link java.lang.reflect.Modifier#methodModifiers()}. Use {@code 0} to ignore modifiers.
-   * @return A {@link me.kvdpxne.modjit.acessor.MethodInvoker} for the specified method.
+   * @return A {@link me.kvdpxne.modjit.accessor.MethodInvoker} for the specified method.
    * @throws me.kvdpxne.modjit.exception.MethodNotFoundReflectionException if the method is not found in the specified
    *   class with the given parameter types and modifiers.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null}, {@code parameterTypes} is
@@ -568,7 +570,7 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.MethodInvoker} for a method in the specified class, matching its
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.MethodInvoker} for a method in the specified class, matching its
    * return type and modifiers.
    * <p>
    * This is a convenience method equivalent to calling
@@ -580,7 +582,7 @@ public final class Reflection {
    * @param returnType The expected return type of the method. Must not be {@code null} if modifiers are zero.
    * @param modifiers The required modifiers for the method, as defined by
    *   {@link java.lang.reflect.Modifier#methodModifiers()}. Use {@code 0} to ignore modifiers.
-   * @return A {@link me.kvdpxne.modjit.acessor.MethodInvoker} for the specified method.
+   * @return A {@link me.kvdpxne.modjit.accessor.MethodInvoker} for the specified method.
    * @throws me.kvdpxne.modjit.exception.MethodNotFoundReflectionException if the method is not found in the specified
    *   class with the given return type and modifiers.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null}, {@code returnType} is {@code null}
@@ -595,7 +597,7 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.MethodInvoker} for a method in the specified class, matching its
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.MethodInvoker} for a method in the specified class, matching its
    * name.
    * <p>
    * This is a convenience method equivalent to calling
@@ -606,7 +608,7 @@ public final class Reflection {
    *
    * @param clazz The class in which to find the method. Must not be {@code null}.
    * @param methodName The simple name of the method to find. Must not be blank.
-   * @return A {@link me.kvdpxne.modjit.acessor.MethodInvoker} for the specified method.
+   * @return A {@link me.kvdpxne.modjit.accessor.MethodInvoker} for the specified method.
    * @throws me.kvdpxne.modjit.exception.MethodNotFoundReflectionException if the method is not found in the specified
    *   class with the given name.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null} or {@code methodName} is blank.
@@ -619,7 +621,7 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.MethodInvoker} for a method in the specified class, matching its
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.MethodInvoker} for a method in the specified class, matching its
    * parameter types.
    * <p>
    * This is a convenience method equivalent to calling
@@ -630,7 +632,7 @@ public final class Reflection {
    * @param clazz The class in which to find the method. Must not be {@code null}.
    * @param parameterTypes An array of {@link java.lang.Class} objects representing the parameter types of the method.
    *   Must not be {@code null}.
-   * @return A {@link me.kvdpxne.modjit.acessor.MethodInvoker} for the specified method.
+   * @return A {@link me.kvdpxne.modjit.accessor.MethodInvoker} for the specified method.
    * @throws me.kvdpxne.modjit.exception.MethodNotFoundReflectionException if the method is not found in the specified
    *   class with the given parameter types.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null} or {@code parameterTypes} is
@@ -644,7 +646,7 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.MethodInvoker} for a method in the specified class, matching its
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.MethodInvoker} for a method in the specified class, matching its
    * return type.
    * <p>
    * This is a convenience method equivalent to calling
@@ -654,7 +656,7 @@ public final class Reflection {
    *
    * @param clazz The class in which to find the method. Must not be {@code null}.
    * @param returnType The expected return type of the method.
-   * @return A {@link me.kvdpxne.modjit.acessor.MethodInvoker} for the specified method.
+   * @return A {@link me.kvdpxne.modjit.accessor.MethodInvoker} for the specified method.
    * @throws me.kvdpxne.modjit.exception.MethodNotFoundReflectionException if the method is not found in the specified
    *   class with the given return type.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null}.
@@ -667,7 +669,7 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.MethodInvoker} for a method in the specified class, matching its
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.MethodInvoker} for a method in the specified class, matching its
    * modifiers.
    * <p>
    * This is a convenience method equivalent to calling
@@ -678,7 +680,7 @@ public final class Reflection {
    * @param clazz The class in which to find the method. Must not be {@code null}.
    * @param modifiers The required modifiers for the method, as defined by
    *   {@link java.lang.reflect.Modifier#methodModifiers()}. Must not be zero.
-   * @return A {@link me.kvdpxne.modjit.acessor.MethodInvoker} for the specified method.
+   * @return A {@link me.kvdpxne.modjit.accessor.MethodInvoker} for the specified method.
    * @throws me.kvdpxne.modjit.exception.MethodNotFoundReflectionException if the method is not found in the specified
    *   class with the given modifiers.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null}, {@code modifiers} is zero, or
@@ -692,7 +694,7 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.ConstructorInitializer} for a constructor in the specified class,
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.ConstructorInitializer} for a constructor in the specified class,
    * matching its parameter types and modifiers.
    * <p>
    * The constructor is looked up using {@link java.lang.Class#getDeclaredConstructor(java.lang.Class[])} (or similar
@@ -705,7 +707,7 @@ public final class Reflection {
    *   constructor. Can be {@code null} if the constructor takes no parameters.
    * @param modifiers The required modifiers for the constructor, as defined by
    *   {@link java.lang.reflect.Modifier#constructorModifiers()}. Use {@code 0} to ignore modifiers.
-   * @return A {@link me.kvdpxne.modjit.acessor.ConstructorInitializer} for the specified constructor.
+   * @return A {@link me.kvdpxne.modjit.accessor.ConstructorInitializer} for the specified constructor.
    * @throws me.kvdpxne.modjit.exception.ConstructorNotFoundReflectionException if the constructor is not found in the
    *   specified class with the given parameter types and modifiers.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null}, {@code parameterTypes} is
@@ -725,7 +727,7 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.ConstructorInitializer} for a constructor in the specified class,
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.ConstructorInitializer} for a constructor in the specified class,
    * matching its parameter types.
    * <p>
    * This is a convenience method equivalent to calling {@link #getConstructor(java.lang.Class, java.lang.Class[], int)}
@@ -735,7 +737,7 @@ public final class Reflection {
    * @param clazz The class for which to find the constructor. Must not be {@code null}.
    * @param parameterTypes An array of {@link java.lang.Class} objects representing the parameter types of the
    *   constructor. Can be {@code null} if the constructor takes no parameters.
-   * @return A {@link me.kvdpxne.modjit.acessor.ConstructorInitializer} for the specified constructor.
+   * @return A {@link me.kvdpxne.modjit.accessor.ConstructorInitializer} for the specified constructor.
    * @throws me.kvdpxne.modjit.exception.ConstructorNotFoundReflectionException if the constructor is not found in the
    *   specified class with the given parameter types.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null}.
@@ -748,7 +750,7 @@ public final class Reflection {
   }
 
   /**
-   * Retrieves a {@link me.kvdpxne.modjit.acessor.ConstructorInitializer} for a constructor in the specified class,
+   * Retrieves a {@link me.kvdpxne.modjit.accessor.ConstructorInitializer} for a constructor in the specified class,
    * matching its modifiers.
    * <p>
    * This is a convenience method equivalent to calling {@link #getConstructor(java.lang.Class, java.lang.Class[], int)}
@@ -758,7 +760,7 @@ public final class Reflection {
    * @param clazz The class for which to find the constructor. Must not be {@code null}.
    * @param modifiers The required modifiers for the constructor, as defined by
    *   {@link java.lang.reflect.Modifier#constructorModifiers()}. Must not be zero.
-   * @return A {@link me.kvdpxne.modjit.acessor.ConstructorInitializer} for the specified constructor.
+   * @return A {@link me.kvdpxne.modjit.accessor.ConstructorInitializer} for the specified constructor.
    * @throws me.kvdpxne.modjit.exception.ConstructorNotFoundReflectionException if the constructor is not found in the
    *   specified class with the given modifiers.
    * @throws java.lang.IllegalArgumentException if {@code clazz} is {@code null}, {@code modifiers} is zero, or

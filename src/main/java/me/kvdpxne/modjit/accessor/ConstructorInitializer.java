@@ -1,4 +1,4 @@
-package me.kvdpxne.modjit.acessor;
+package me.kvdpxne.modjit.accessor;
 
 /**
  * Defines the contract for initializing new instances of a class using reflection. Implementations of this interface

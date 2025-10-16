@@ -2,13 +2,13 @@ package me.kvdpxne.modjit.cache.invoker;
 
 import java.lang.reflect.Field;
 import java.util.Objects;
-import me.kvdpxne.modjit.acessor.FieldAccessor;
+import me.kvdpxne.modjit.accessor.FieldAccessor;
 import me.kvdpxne.modjit.exception.ReflectionSecurityException;
 import me.kvdpxne.modjit.util.AccessController;
 
 /**
- * An implementation of {@link me.kvdpxne.modjit.acessor.FieldAccessor} that wraps a {@link java.lang.reflect.Field} and
- * provides the logic for getting and setting field values using reflection.
+ * An implementation of {@link me.kvdpxne.modjit.accessor.FieldAccessor} that wraps a {@link java.lang.reflect.Field}
+ * and provides the logic for getting and setting field values using reflection.
  * <p>
  * This class handles the access to the underlying field, manages its accessibility using the
  * {@link me.kvdpxne.modjit.util.AccessController}, and translates reflection-specific exceptions into library-specific
