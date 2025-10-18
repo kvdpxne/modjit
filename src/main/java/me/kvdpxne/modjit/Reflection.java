@@ -4,6 +4,9 @@ import java.lang.reflect.Modifier;
 import me.kvdpxne.modjit.accessor.ConstructorInitializer;
 import me.kvdpxne.modjit.accessor.FieldAccessor;
 import me.kvdpxne.modjit.accessor.MethodInvoker;
+import me.kvdpxne.modjit.accessor.builder.ConstructorBuilder;
+import me.kvdpxne.modjit.accessor.builder.FieldBuilder;
+import me.kvdpxne.modjit.accessor.builder.MethodBuilder;
 import me.kvdpxne.modjit.cache.component.ClassCache;
 import me.kvdpxne.modjit.cache.component.ConstructorCache;
 import me.kvdpxne.modjit.cache.component.FieldCache;
@@ -467,6 +470,10 @@ public final class Reflection {
     final int modifiers
   ) {
     return Reflection.getField(clazz, null, null, modifiers);
+  }
+
+  public static FieldBuilder newFieldFinder() {
+    return new FieldBuilder();
   }
 
   /**
@@ -957,6 +964,10 @@ public final class Reflection {
     return Reflection.getMethod(clazz, null, null, null, modifiers);
   }
 
+  public static MethodBuilder newMethodFinder() {
+    return new MethodBuilder();
+  }
+
   /**
    * Retrieves a {@link me.kvdpxne.modjit.accessor.ConstructorInitializer} for a constructor in the specified class,
    * matching its parameter types and modifiers.
@@ -1165,6 +1176,10 @@ public final class Reflection {
     final Class<?> clazz
   ) {
     return Reflection.getConstructor(clazz, null, 0);
+  }
+
+  public static ConstructorBuilder newConstructorFinder() {
+    return new ConstructorBuilder();
   }
 
   /**

@@ -1,0 +1,79 @@
+package me.kvdpxne.modjit.accessor.builder;
+
+import java.lang.reflect.Modifier;
+import me.kvdpxne.modjit.Reflection;
+import me.kvdpxne.modjit.accessor.MethodInvoker;
+import me.kvdpxne.modjit.util.Buildable;
+import me.kvdpxne.modjit.util.Validation;
+
+/**
+ * 18.10.2025 18:08
+ *
+ * @author kvdpxne
+ * @version 0.1.0
+ * @since 0.1.0
+ */
+public final class MethodBuilder
+  implements
+  Buildable<MethodInvoker> {
+
+  private Class<?> clazz;
+  private String methodName;
+  private Class<?>[] parameterTypes;
+  private Class<?> returnType;
+  private int modifiers;
+
+  public MethodBuilder() {
+  }
+
+  public MethodBuilder inClass(
+    final Class<?> clazz
+  ) {
+    Validation.requireNotNull(clazz, () -> "Class type cannot be null.");
+    this.clazz = clazz;
+    return this;
+  }
+
+  public MethodBuilder withMethodName(
+    final String methodName
+  ) {
+    Validation.requireNotBlank(methodName, () -> "Method name cannot be blank.");
+    this.methodName = methodName;
+    return this;
+  }
+
+  public MethodBuilder withParameterTypes(
+    final Class<?>[] parameterTypes
+  ) {
+    Validation.requireNotNull(parameterTypes, () -> "Parameter types cannot be null.");
+    this.parameterTypes = parameterTypes;
+    return this;
+  }
+
+  public MethodBuilder withReturnType(
+    final Class<?> returnType
+  ) {
+    Validation.requireNotNull(returnType, () -> "Return type cannot be null.");
+    this.returnType = returnType;
+    return this;
+  }
+
+  public MethodBuilder withModifiers(
+    final int modifiers
+  ) {
+    Validation.require(0 == (modifiers & ~Modifier.methodModifiers()), () -> "Invalid method modifiers specified.");
+    this.modifiers = modifiers;
+    return this;
+  }
+
+  @Override
+  public MethodInvoker build() {
+    return Reflection.getMethod(
+      this.clazz,
+      this.methodName,
+      this.parameterTypes,
+      this.returnType,
+      this.modifiers
+    );
+  }
+}
