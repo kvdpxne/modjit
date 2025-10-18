@@ -33,6 +33,13 @@ public final class FieldBuilder
     return this;
   }
 
+  public FieldBuilder inClass(
+    final String clazz
+  ) {
+    this.clazz = Reflection.getClass(clazz);
+    return this;
+  }
+
   public FieldBuilder setFieldName(
     final String fieldName
   ) {
@@ -46,6 +53,13 @@ public final class FieldBuilder
   ) {
     Validation.requireNotNull(fieldType, () -> "Field type cannot be null.");
     this.fieldType = fieldType;
+    return this;
+  }
+
+  public FieldBuilder setFieldType(
+    final String fieldType
+  ) {
+    this.fieldType = Reflection.getClass(fieldType);
     return this;
   }
 

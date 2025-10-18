@@ -32,11 +32,30 @@ public final class ConstructorBuilder
     return this;
   }
 
+  public ConstructorBuilder inClass(
+    final String clazz
+  ) {
+    this.clazz = Reflection.getClass(clazz);
+    return this;
+  }
+
   public ConstructorBuilder withParameterTypes(
     final Class<?>[] parameterTypes
   ) {
     Validation.requireNotNull(parameterTypes, () -> "Parameter types cannot be null.");
     this.parameterTypes = parameterTypes;
+    return this;
+  }
+
+  public ConstructorBuilder withParameterTypes(
+    final String[] parameterTypes
+  ) {
+    Validation.requireNotNull(parameterTypes, () -> "Parameter types cannot be null.");
+    final Class<?>[] parameterTypesArray = new Class[parameterTypes.length];
+    for (int i = 0; parameterTypes.length > i; ++i) {
+      parameterTypesArray[i] = Reflection.getClass(parameterTypes[i]);
+    }
+    this.parameterTypes = parameterTypesArray;
     return this;
   }
 

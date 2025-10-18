@@ -34,6 +34,13 @@ public final class MethodBuilder
     return this;
   }
 
+  public MethodBuilder inClass(
+    final String clazz
+  ) {
+    this.clazz = Reflection.getClass(clazz);
+    return this;
+  }
+
   public MethodBuilder withMethodName(
     final String methodName
   ) {
@@ -50,11 +57,30 @@ public final class MethodBuilder
     return this;
   }
 
+  public MethodBuilder withParameterTypes(
+    final String[] parameterTypes
+  ) {
+    Validation.requireNotNull(parameterTypes, () -> "Parameter types cannot be null.");
+    final Class<?>[] parameterTypesArray = new Class[parameterTypes.length];
+    for (int i = 0; parameterTypes.length > i; ++i) {
+      parameterTypesArray[i] = Reflection.getClass(parameterTypes[i]);
+    }
+    this.parameterTypes = parameterTypesArray;
+    return this;
+  }
+
   public MethodBuilder withReturnType(
     final Class<?> returnType
   ) {
     Validation.requireNotNull(returnType, () -> "Return type cannot be null.");
     this.returnType = returnType;
+    return this;
+  }
+
+  public MethodBuilder withReturnType(
+    final String returnType
+  ) {
+    this.returnType = Reflection.getClass(returnType);
     return this;
   }
 
