@@ -7,8 +7,13 @@ import java.util.Objects;
  * <p>
  * This class encapsulates the identifying attributes of a specific field: the fully qualified name of the declaring
  * class, the simple name of the field, the fully qualified name of its type (if specified), and its modifiers. It is
- * designed for use as a key in a map-based cache, providing consistent implementations of
- * {@link #equals(java.lang.Object)} and {@link #hashCode()}.
+ * designed for use as a key in a map-based cache, providing consistent implementations of {@link #equals(Object)} and
+ * {@link #hashCode()}.
+ * </p>
+ * <p>
+ * The key considers all four components when determining equality and hash code, ensuring that fields with different
+ * names, types, or modifiers are treated as distinct cache entries even when declared in the same class. This allows
+ * for precise field lookup based on various combinations of search criteria.
  * </p>
  *
  * @author Łukasz Pietrzak (kvdpxne)
@@ -29,7 +34,7 @@ public final class FieldKey {
 
   /**
    * The fully qualified name of the type of the associated field. This can be {@code null} if the field type was not
-   * part of the caching criteria.
+   * part of the caching criteria, indicating that field type matching was not required for the cache lookup.
    */
   private final String fieldType;
 
@@ -39,13 +44,13 @@ public final class FieldKey {
   private final int modifiers;
 
   /**
-   * Constructs a new {@code FieldKey} instance.
+   * Constructs a new {@code FieldKey} instance with the specified field attributes.
    *
-   * @param className The fully qualified name of the class declaring the field. Must not be {@code null}.
-   * @param fieldName The simple name of the field. Must not be {@code null}.
-   * @param fieldType The fully qualified name of the field's type. Can be {@code null} if the type is not part of the
-   *   caching criteria.
-   * @param modifiers The modifiers of the field.
+   * @param className the fully qualified name of the class declaring the field; must not be {@code null}
+   * @param fieldName the simple name of the field; must not be {@code null}
+   * @param fieldType the fully qualified name of the field's type; can be {@code null} if the type is not part of the
+   *   caching criteria
+   * @param modifiers the modifiers of the field, as defined by {@link java.lang.reflect.Modifier}
    */
   public FieldKey(
     final String className,
@@ -60,12 +65,16 @@ public final class FieldKey {
   }
 
   /**
-   * Compares this {@code FieldKey} with another object for equality. Two instances are considered equal if their class
-   * names, field names, and field types are all equal according to
-   * {@link java.util.Objects#equals(java.lang.Object, java.lang.Object)}.
+   * Compares this {@code FieldKey} with another object for equality.
+   * <p>
+   * Two instances are considered equal if their class names, field names, field types, and modifiers are all equal
+   * according to {@link Objects#equals(Object, Object)}. A {@code null} field type is considered equal only to another
+   * {@code null} field type.
+   * </p>
    *
    * @param o the object to compare with
-   * @return {@code true} if the objects are equal, {@code false} otherwise
+   * @return {@code true} if the objects are equal based on class name, field name, field type, and modifiers;
+   *   {@code false} otherwise
    */
   @Override
   public boolean equals(
@@ -82,8 +91,12 @@ public final class FieldKey {
   }
 
   /**
-   * Returns the hash code value for this {@code FieldKey}. The hash code is computed based on the class name, field
-   * name, and field type.
+   * Returns the hash code value for this {@code FieldKey}.
+   * <p>
+   * The hash code is computed based on the class name, field name, field type, and modifiers using
+   * {@link Objects#hash(Object...)}. This ensures that fields with different attributes produce different hash codes,
+   * making them suitable for use as keys in hash-based collections.
+   * </p>
    *
    * @return the hash code value for this instance
    */

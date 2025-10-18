@@ -12,18 +12,21 @@ import me.kvdpxne.modjit.util.AccessController;
  * An implementation of {@link me.kvdpxne.modjit.accessor.ConstructorInitializer} that wraps a
  * {@link java.lang.reflect.Constructor} and provides the logic for creating new instances using reflection.
  * <p>
- * This class handles the invocation of the underlying constructor, manages its accessibility using the
- * {@link me.kvdpxne.modjit.util.AccessController}, and translates reflection-specific exceptions into library-specific
- * exceptions like {@link me.kvdpxne.modjit.exception.ReflectionSecurityException} or
- * {@link me.kvdpxne.modjit.exception.ReflectionException}.
+ * This class handles the complete constructor invocation process, including accessibility management, parameter
+ * passing, exception translation, and state restoration. It ensures that the original accessibility state of the
+ * constructor is preserved and restored after each invocation attempt, preventing security warnings and potential
+ * accessibility leaks.
  * </p>
  * <p>
- * It ensures that the original accessibility state of the constructor is restored after each invocation attempt,
- * preventing security warnings and potential leaks.
+ * The implementation immediately enables constructor accessibility upon instantiation and manages the accessibility
+ * lifecycle through try-finally blocks to guarantee proper state restoration even when exceptions occur during object
+ * construction.
  * </p>
  *
  * @author Łukasz Pietrzak (kvdpxne)
  * @version 0.1.0
+ * @see me.kvdpxne.modjit.accessor.ConstructorInitializer
+ * @see java.lang.reflect.Constructor
  * @since 0.1.0
  */
 public final class ConstructorInitializerImpl
@@ -31,34 +34,53 @@ public final class ConstructorInitializerImpl
   ConstructorInitializer {
 
   /**
-   * The underlying {@link java.lang.reflect.Constructor} object being wrapped.
+   * The underlying {@link java.lang.reflect.Constructor} object being wrapped and managed.
+   * <p>
+   * This field holds the reflection constructor that will be used to create new object instances. The constructor is
+   * made accessible upon initialization of this wrapper and its accessibility state is carefully managed throughout the
+   * object lifecycle.
+   * </p>
    */
   private final Constructor<?> constructor;
 
   /**
-   * The original accessibility state of the constructor before any manipulation by this library. This state is restored
-   * after each invocation to prevent security warnings.
+   * The original accessibility state of the constructor before any modification by this wrapper.
+   * <p>
+   * This value is captured when the wrapper is created and used to restore the constructor's accessibility state after
+   * each invocation. This prevents "illegal reflective access" warnings and maintains security integrity by not
+   * permanently altering the constructor's accessibility.
+   * </p>
    */
   private final boolean originalAccessible;
 
   /**
-   * The fully qualified name of the class declaring the constructor. Used for constructing error messages.
+   * The fully qualified name of the class declaring the constructor.
+   * <p>
+   * This field is used for constructing descriptive error messages when exceptions occur during object instantiation.
+   * It provides context about which class and constructor failed, aiding in debugging and error reporting.
+   * </p>
    */
   private final String className;
 
   /**
-   * Constructs a new {@code ConstructorInitializerImpl}.
+   * Constructs a new constructor initializer wrapper.
    * <p>
-   * It immediately sets the underlying constructor accessible using
-   * {@link me.kvdpxne.modjit.util.AccessController#setAccessible(java.lang.reflect.AccessibleObject, boolean)} so that
-   * subsequent calls to {@link #newInstance(java.lang.Object[])} can proceed. The original accessibility state is
-   * stored for later restoration.
+   * This constructor immediately enables accessibility for the underlying constructor using
+   * {@link me.kvdpxne.modjit.util.AccessController#setAccessible(java.lang.reflect.AccessibleObject, boolean)} to
+   * ensure subsequent calls to {@link #newInstance(Object[])} can proceed without additional accessibility checks. The
+   * original accessibility state is preserved for later restoration.
+   * </p>
+   * <p>
+   * The accessibility enablement is safe because the state will be restored in the finally block during each
+   * constructor invocation, preventing permanent accessibility changes.
    * </p>
    *
-   * @param constructor The {@link java.lang.reflect.Constructor} to wrap. Must not be {@code null}.
-   * @param originalAccessible {@code true} if the constructor was originally accessible, {@code false} otherwise.
-   * @param className The name of the class declaring the constructor. Used for error messages. Must not be
-   *   {@code null}.
+   * @param constructor the {@link java.lang.reflect.Constructor} to wrap and manage; must not be {@code null}
+   * @param originalAccessible the original accessibility state of the constructor before any modification; used to
+   *   restore the constructor's original state after invocations
+   * @param className the fully qualified name of the class declaring the constructor; must not be {@code null}; used
+   *   for error message context
+   * @throws java.lang.NullPointerException if either {@code constructor} or {@code className} is {@code null}
    */
   public ConstructorInitializerImpl(
     final Constructor<?> constructor,
@@ -74,25 +96,43 @@ public final class ConstructorInitializerImpl
   }
 
   /**
-   * Creates a new instance of the target class by invoking the underlying constructor with the specified parameters.
+   * Creates a new instance of the target class by invoking the underlying constructor.
    * <p>
-   * It uses {@link java.lang.reflect.Constructor#newInstance(java.lang.Object...)} to perform the instantiation. If the
-   * {@code parameters} array is {@code null}, it calls the constructor with no arguments. Otherwise, it passes the
-   * provided parameters.
+   * This method performs the complete object instantiation process, handling parameter passing, exception translation,
+   * and accessibility management. The constructor is invoked with the specified parameters, and the method ensures
+   * proper cleanup regardless of success or failure.
    * </p>
    * <p>
-   * After the invocation attempt (successful or not), it restores the constructor's accessibility to its original state
+   * The method handles both no-argument constructors (when parameters are {@code null} or empty) and parameterized
+   * constructors. After the invocation attempt, the constructor's accessibility state is restored to its original value
    * if it was not originally accessible.
    * </p>
+   * <p>
+   * Exceptions thrown during construction are translated into the library's standardized exception hierarchy, with
+   * special handling for common reflection-related error conditions.
+   * </p>
    *
-   * @param parameters An array of objects representing the arguments to pass to the constructor. If the constructor
-   *   takes no arguments, an empty array ({@code new Object[0]}) should be passed. Passing {@code null} will result in
-   *   a call to the no-argument constructor.
-   * @return A new instance of the target class.
+   * @param parameters an array of objects representing the arguments to pass to the constructor; may be {@code null}
+   *   to invoke a no-argument constructor, or an empty array for explicit no-argument invocation; must match the
+   *   constructor's parameter types in order and assignment compatibility
+   * @return a new instance of the target class created by invoking the constructor; never {@code null} unless the
+   *   constructor explicitly returns {@code null} (which is not typical for constructors)
    * @throws me.kvdpxne.modjit.exception.ReflectionSecurityException if the underlying constructor is not accessible
-   *   and cannot be made accessible during invocation.
-   * @throws me.kvdpxne.modjit.exception.ReflectionException if an error occurs during the construction process, such
-   *   as instantiation failure of an abstract class or an exception thrown by the invoked constructor itself.
+   *   and cannot be made accessible during invocation due to security manager restrictions or Java module system
+   *   constraints
+   * @throws me.kvdpxne.modjit.exception.ReflectionException if an error occurs during the construction process;
+   *   common causes include:
+   *   <ul>
+   *     <li>Exceptions thrown by the constructor logic itself (wrapped as the cause)</li>
+   *     <li>Instantiation of abstract classes</li>
+   *     <li>Parameter type mismatches or incorrect parameter counts</li>
+   *     <li>Generic array creation issues</li>
+   *   </ul>
+   * @throws java.lang.IllegalArgumentException if the number of actual and formal parameters differ, or if unwrapping
+   *   conversion for primitive types fails
+   * @throws java.lang.InstantiationException if the class that declares the underlying constructor represents an
+   *   abstract class (wrapped in ReflectionException)
+   * @throws java.lang.ExceptionInInitializerError if the constructor initialization triggers an exception
    */
   @Override
   public Object newInstance(
@@ -129,12 +169,20 @@ public final class ConstructorInitializerImpl
   }
 
   /**
-   * Compares this {@code ConstructorInitializerImpl} with another object for equality. Two instances are considered
-   * equal if they wrap the same underlying {@link java.lang.reflect.Constructor}, have the same original accessibility
-   * state, and belong to the same class (based on the class name).
+   * Compares this constructor initializer with another object for equality.
+   * <p>
+   * Two {@code ConstructorInitializerImpl} instances are considered equal if they wrap the same underlying constructor
+   * (as determined by {@link java.lang.reflect.Constructor#equals(Object)}), have the same original accessibility
+   * state, and are associated with the same class name.
+   * </p>
+   * <p>
+   * This equality implementation ensures that constructor initializers can be properly compared and used in hash-based
+   * collections, maintaining consistency with the wrapped constructor's identity and configuration.
+   * </p>
    *
-   * @param o the object to compare with
-   * @return {@code true} if the objects are equal, {@code false} otherwise
+   * @param o the object to compare with this constructor initializer for equality; may be {@code null}
+   * @return {@code true} if the specified object is a {@code ConstructorInitializerImpl} that wraps the same
+   *   constructor, has the same original accessibility state, and the same class name; {@code false} otherwise
    */
   @Override
   public boolean equals(
@@ -150,10 +198,18 @@ public final class ConstructorInitializerImpl
   }
 
   /**
-   * Returns the hash code value for this {@code ConstructorInitializerImpl}. The hash code is computed based on the
-   * underlying constructor, the original accessibility state, and the class name.
+   * Returns a hash code value for this constructor initializer.
+   * <p>
+   * The hash code is computed based on the underlying constructor, the original accessibility state, and the class
+   * name. This implementation ensures that equal objects have equal hash codes, making instances suitable for use as
+   * keys in hash-based collections.
+   * </p>
+   * <p>
+   * The hash code computation uses {@link java.util.Objects#hash(Object...)} to combine the relevant fields, providing
+   * a well-distributed hash value that reflects the object's identity and configuration.
+   * </p>
    *
-   * @return the hash code value for this instance
+   * @return a hash code value for this constructor initializer
    */
   @Override
   public int hashCode() {

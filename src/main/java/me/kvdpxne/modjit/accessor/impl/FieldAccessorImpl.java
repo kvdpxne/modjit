@@ -10,17 +10,20 @@ import me.kvdpxne.modjit.util.AccessController;
  * An implementation of {@link me.kvdpxne.modjit.accessor.FieldAccessor} that wraps a {@link java.lang.reflect.Field}
  * and provides the logic for getting and setting field values using reflection.
  * <p>
- * This class handles the access to the underlying field, manages its accessibility using the
- * {@link me.kvdpxne.modjit.util.AccessController}, and translates reflection-specific exceptions into library-specific
- * exceptions like {@link me.kvdpxne.modjit.exception.ReflectionSecurityException}.
+ * This class handles the complete field access process, including accessibility management, value retrieval and
+ * assignment, exception translation, and state restoration. It ensures that the original accessibility state of the
+ * field is preserved and restored after each access attempt, preventing security warnings and potential accessibility
+ * leaks.
  * </p>
  * <p>
- * It ensures that the original accessibility state of the field is restored after each access attempt, preventing
- * security warnings and potential leaks.
+ * The implementation immediately enables field accessibility upon instantiation and manages the accessibility lifecycle
+ * through try-finally blocks to guarantee proper state restoration even when exceptions occur during field operations.
  * </p>
  *
  * @author Łukasz Pietrzak (kvdpxne)
  * @version 0.1.0
+ * @see me.kvdpxne.modjit.accessor.FieldAccessor
+ * @see java.lang.reflect.Field
  * @since 0.1.0
  */
 public final class FieldAccessorImpl
@@ -28,33 +31,53 @@ public final class FieldAccessorImpl
   FieldAccessor {
 
   /**
-   * The underlying {@link java.lang.reflect.Field} object being wrapped.
+   * The underlying {@link java.lang.reflect.Field} object being wrapped and managed.
+   * <p>
+   * This field holds the reflection field that will be used to access and modify field values. The field is made
+   * accessible upon initialization of this wrapper and its accessibility state is carefully managed throughout the
+   * object lifecycle.
+   * </p>
    */
   private final Field field;
 
   /**
-   * The original accessibility state of the field before any manipulation by this library. This state is restored after
-   * each access to prevent security warnings.
+   * The original accessibility state of the field before any modification by this wrapper.
+   * <p>
+   * This value is captured when the wrapper is created and used to restore the field's accessibility state after each
+   * access operation. This prevents "illegal reflective access" warnings and maintains security integrity by not
+   * permanently altering the field's accessibility.
+   * </p>
    */
   private final boolean originalAccessible;
 
   /**
-   * The fully qualified name of the class declaring the field. Used for constructing error messages.
+   * The fully qualified name of the class declaring the field.
+   * <p>
+   * This field is used for constructing descriptive error messages when exceptions occur during field access
+   * operations. It provides context about which class and field failed, aiding in debugging and error reporting.
+   * </p>
    */
   private final String className;
 
   /**
-   * Constructs a new {@code FieldAccessorImpl}.
+   * Constructs a new field accessor wrapper.
    * <p>
-   * It immediately sets the underlying field accessible using
-   * {@link me.kvdpxne.modjit.util.AccessController#setAccessible(java.lang.reflect.AccessibleObject, boolean)} so that
-   * subsequent calls to {@link #get(java.lang.Object)} or {@link #set(java.lang.Object, java.lang.Object)} can proceed.
-   * The original accessibility state is stored for later restoration.
+   * This constructor immediately enables accessibility for the underlying field using
+   * {@link me.kvdpxne.modjit.util.AccessController#setAccessible(java.lang.reflect.AccessibleObject, boolean)} to
+   * ensure subsequent calls to {@link #get(Object)} or {@link #set(Object, Object)} can proceed without additional
+   * accessibility checks. The original accessibility state is preserved for later restoration.
+   * </p>
+   * <p>
+   * The accessibility enablement is safe because the state will be restored in the finally block during each field
+   * access, preventing permanent accessibility changes.
    * </p>
    *
-   * @param field The {@link java.lang.reflect.Field} to wrap. Must not be {@code null}.
-   * @param originalAccessible {@code true} if the field was originally accessible, {@code false} otherwise.
-   * @param className The name of the class declaring the field. Used for error messages. Must not be {@code null}.
+   * @param field the {@link java.lang.reflect.Field} to wrap and manage; must not be {@code null}
+   * @param originalAccessible the original accessibility state of the field before any modification; used to restore
+   *   the field's original state after access operations
+   * @param className the fully qualified name of the class declaring the field; must not be {@code null}; used for
+   *   error message context
+   * @throws java.lang.NullPointerException if either {@code field} or {@code className} is {@code null}
    */
   public FieldAccessorImpl(
     final Field field,
@@ -70,20 +93,33 @@ public final class FieldAccessorImpl
   }
 
   /**
-   * Gets the value of the underlying field from the specified target object.
+   * Retrieves the value of the underlying field from the specified target object.
    * <p>
-   * It uses {@link java.lang.reflect.Field#get(java.lang.Object)} to retrieve the value.
+   * This method performs the field value retrieval, handling accessibility management, exception translation, and state
+   * restoration. The field value is retrieved using {@link java.lang.reflect.Field#get(Object)}, and the method ensures
+   * proper cleanup regardless of success or failure.
    * </p>
    * <p>
-   * After the access attempt (successful or not), it restores the field's accessibility to its original state if it was
-   * not originally accessible.
+   * The method supports both instance fields (non-static) and static fields. For static fields, the target parameter is
+   * ignored and can be {@code null}. After the access attempt, the field's accessibility state is restored to its
+   * original value if it was not originally accessible.
    * </p>
    *
-   * @param target The object from which to get the field's value. For static fields, this parameter can be
-   *   {@code null}.
-   * @return The value of the field in the specified object.
+   * @param target the object from which to read the field value; for static fields, this parameter can be
+   *   {@code null}; for instance fields, must be a non-null instance of the class declaring the field
+   * @return the current value of the field in the specified object; may be {@code null} if the field contains a null
+   *   value or is of a primitive type (which will be returned as the corresponding wrapper type)
    * @throws me.kvdpxne.modjit.exception.ReflectionSecurityException if the underlying field is not accessible and
-   *   cannot be made accessible during access.
+   *   cannot be made accessible during access due to security manager restrictions or Java module system constraints
+   * @throws me.kvdpxne.modjit.exception.ReflectionException if an error occurs during field access; common causes
+   *   include:
+   *   <ul>
+   *     <li>The target object is incompatible with the field's declaring class</li>
+   *     <li>The field is an instance field and the target object is {@code null}</li>
+   *   </ul>
+   * @throws java.lang.NullPointerException if the field is an instance field and the target object is {@code null}
+   * @throws java.lang.IllegalArgumentException if the target object is not an instance of the class or interface
+   *   declaring the underlying field
    */
   @Override
   public Object get(
@@ -108,18 +144,34 @@ public final class FieldAccessorImpl
   /**
    * Sets the value of the underlying field on the specified target object.
    * <p>
-   * It uses {@link java.lang.reflect.Field#set(java.lang.Object, java.lang.Object)} to assign the new value.
+   * This method performs the field value assignment, handling accessibility management, exception translation, and
+   * state restoration. The field value is set using {@link java.lang.reflect.Field#set(Object, Object)}, and the method
+   * ensures proper cleanup regardless of success or failure.
    * </p>
    * <p>
-   * After the access attempt (successful or not), it restores the field's accessibility to its original state if it was
-   * not originally accessible.
+   * The method supports both instance fields (non-static) and static fields. For static fields, the target parameter is
+   * ignored and can be {@code null}. The value must be assignment-compatible with the field's declared type. After the
+   * assignment attempt, the field's accessibility state is restored to its original value if it was not originally
+   * accessible.
    * </p>
    *
-   * @param target The object on which to set the field's value. For static fields, this parameter can be
-   *   {@code null}.
-   * @param value The new value to assign to the field.
+   * @param target the object on which to set the field value; for static fields, this parameter can be {@code null};
+   *   for instance fields, must be a non-null instance of the class declaring the field
+   * @param value the new value to assign to the field; must be assignment-compatible with the field's declared type;
+   *   may be {@code null} for reference types
    * @throws me.kvdpxne.modjit.exception.ReflectionSecurityException if the underlying field is not accessible and
-   *   cannot be made accessible during access.
+   *   cannot be made accessible during assignment due to security manager restrictions or Java module system
+   *   constraints
+   * @throws me.kvdpxne.modjit.exception.ReflectionException if an error occurs during field assignment; common causes
+   *   include:
+   *   <ul>
+   *     <li>The target object is incompatible with the field's declaring class</li>
+   *     <li>The field is an instance field and the target object is {@code null}</li>
+   *     <li>The value type is not assignment-compatible with the field's declared type</li>
+   *   </ul>
+   * @throws java.lang.NullPointerException if the field is an instance field and the target object is {@code null}
+   * @throws java.lang.IllegalArgumentException if the target object is not an instance of the class or interface
+   *   declaring the underlying field, or if the value type is not assignment-compatible with the field's declared type
    */
   @Override
   public void set(
@@ -143,12 +195,20 @@ public final class FieldAccessorImpl
   }
 
   /**
-   * Compares this {@code FieldAccessorImpl} with another object for equality. Two instances are considered equal if
-   * they wrap the same underlying {@link java.lang.reflect.Field}, have the same original accessibility state, and
-   * belong to the same class (based on the class name).
+   * Compares this field accessor with another object for equality.
+   * <p>
+   * Two {@code FieldAccessorImpl} instances are considered equal if they wrap the same underlying field (as determined
+   * by {@link java.lang.reflect.Field#equals(Object)}), have the same original accessibility state, and are associated
+   * with the same class name.
+   * </p>
+   * <p>
+   * This equality implementation ensures that field accessors can be properly compared and used in hash-based
+   * collections, maintaining consistency with the wrapped field's identity and configuration.
+   * </p>
    *
-   * @param o the object to compare with
-   * @return {@code true} if the objects are equal, {@code false} otherwise
+   * @param o the object to compare with this field accessor for equality; may be {@code null}
+   * @return {@code true} if the specified object is a {@code FieldAccessorImpl} that wraps the same field, has the same
+   *   original accessibility state, and the same class name; {@code false} otherwise
    */
   @Override
   public boolean equals(
@@ -164,10 +224,18 @@ public final class FieldAccessorImpl
   }
 
   /**
-   * Returns the hash code value for this {@code FieldAccessorImpl}. The hash code is computed based on the underlying
-   * field, the original accessibility state, and the class name.
+   * Returns a hash code value for this field accessor.
+   * <p>
+   * The hash code is computed based on the underlying field, the original accessibility state, and the class name. This
+   * implementation ensures that equal objects have equal hash codes, making instances suitable for use as keys in
+   * hash-based collections.
+   * </p>
+   * <p>
+   * The hash code computation uses {@link java.util.Objects#hash(Object...)} to combine the relevant fields, providing
+   * a well-distributed hash value that reflects the object's identity and configuration.
+   * </p>
    *
-   * @return the hash code value for this instance
+   * @return a hash code value for this field accessor
    */
   @Override
   public int hashCode() {

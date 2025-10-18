@@ -7,13 +7,18 @@ import java.lang.reflect.Modifier;
 import me.kvdpxne.modjit.exception.ReflectionSecurityException;
 
 /**
- * Provides utility methods for managing the accessibility of reflection objects
- * ({@link java.lang.reflect.AccessibleObject AccessibleObject}, such as {@link java.lang.reflect.Field},
- * {@link java.lang.reflect.Method}, or {@link java.lang.reflect.Constructor}).
+ * Provides utility methods for managing the accessibility of reflection objects ({@link AccessibleObject}, such as
+ * {@link Field}, {@link Method}, or {@link java.lang.reflect.Constructor}).
  * <p>
  * This class handles differences in accessibility checks and setting across different Java versions, particularly
  * versions 9 and above, to ensure consistent behavior and prevent "illegal reflective access" warnings. It includes
  * logic to detect the current Java version and manage the accessibility state of reflection members accordingly.
+ * </p>
+ * <p>
+ * For Java 9 and later, this class uses {@link AccessibleObject#canAccess(Object)} via reflection to check
+ * accessibility. For earlier versions, it falls back to {@link AccessibleObject#isAccessible()}. Special handling is
+ * provided for package-private members in Java 12 and above where direct accessibility setting may be restricted by the
+ * module system.
  * </p>
  *
  * @author Łukasz Pietrzak (kvdpxne)
@@ -24,17 +29,20 @@ public final class AccessController {
 
   /**
    * The detected Java version of the runtime environment. This value is determined once during class loading by
-   * {@link #getSystemJavaVersion()}.
+   * {@link #getSystemJavaVersion()} and cached for subsequent calls.
    */
   private static int javaVersion = 0;
 
   /**
-   *
+   * Cached reference to the {@code canAccess} method from {@link AccessibleObject} for Java 9+. This is initialized on
+   * first use and reused to avoid repeated reflection lookups.
    */
   private static Method canAccessMethod = null;
 
   /**
    * Prevents instantiation of this utility class.
+   *
+   * @throws AssertionError always thrown when constructor is invoked
    */
   private AccessController() {
     throw new AssertionError();
@@ -43,13 +51,17 @@ public final class AccessController {
   /**
    * Detects the major Java version of the current runtime environment.
    * <p>
-   * It retrieves the value of the {@code java.version} system property and parses the first numeric part found (e.g.,
-   * "11.0.1" -> 11, "1.8.0_202" -> 8).
+   * Retrieves the value of the {@code java.version} system property and parses the first numeric part found. Examples:
    * </p>
+   * <ul>
+   *   <li>"11.0.1" → 11</li>
+   *   <li>"1.8.0_202" → 8</li>
+   *   <li>"17" → 17</li>
+   * </ul>
    *
-   * @return The major Java version number (e.g., 8, 11, 17).
-   * @throws java.lang.IllegalStateException if the {@code java.version} system property is {@code null} or cannot be
-   *   parsed into a valid number.
+   * @return the major Java version number (e.g., 8, 11, 17)
+   * @throws IllegalStateException if the {@code java.version} system property is {@code null} or cannot be parsed
+   *   into a valid number
    */
   private static int getSystemJavaVersion() {
     final String version = System.getProperty("java.version");
@@ -64,11 +76,22 @@ public final class AccessController {
           return number;
         }
       } catch (final NumberFormatException ignored) {
+        // Continue to next part if current part is not a number
       }
     }
     throw new IllegalStateException("Unable to parse Java version from string: " + version);
   }
 
+  /**
+   * Returns the major Java version of the current runtime environment.
+   * <p>
+   * The version is detected once and cached for subsequent calls. The detection uses the {@code java.version} system
+   * property and parses the major version number.
+   * </p>
+   *
+   * @return the major Java version number (e.g., 8, 11, 17)
+   * @throws IllegalStateException if the Java version cannot be determined from the system properties
+   */
   public static int getJavaVersion() {
     if (0 == AccessController.javaVersion) {
       AccessController.javaVersion = AccessController.getSystemJavaVersion();
@@ -83,10 +106,9 @@ public final class AccessController {
    * {@code private} flags.
    * </p>
    *
-   * @param member The reflection member ({@link java.lang.reflect.Field} or {@link java.lang.reflect.Method}) to
-   *   check for package-private access.
-   * @return {@code true} if the member is package-private, {@code false} otherwise. Returns {@code false} if the member
-   *   is not a {@link java.lang.reflect.Field} or {@link java.lang.reflect.Method}.
+   * @param member the reflection member ({@link Field} or {@link Method}) to check for package-private access
+   * @return {@code true} if the member is package-private, {@code false} otherwise; returns {@code false} if the member
+   *   is not a {@link Field} or {@link Method}
    */
   private static boolean isPackagePrivate(
     final AccessibleObject member
@@ -109,17 +131,18 @@ public final class AccessController {
   /**
    * Checks if the given reflection member is accessible for the specified target object.
    * <p>
-   * This method handles the difference between pre-Java 9 and Java 9+ APIs. On Java 9 and later, it uses
-   * {@link java.lang.reflect.AccessibleObject#canAccess(java.lang.Object)} via reflection. On earlier versions, it uses
-   * {@link java.lang.reflect.AccessibleObject#isAccessible()}.
+   * This method handles the difference between pre-Java 9 and Java 9+ APIs:
    * </p>
+   * <ul>
+   *   <li>On Java 9 and later: uses {@link AccessibleObject#canAccess(Object)} via reflection</li>
+   *   <li>On earlier versions: uses {@link AccessibleObject#isAccessible()}</li>
+   * </ul>
    *
-   * @param member The reflection member to check for accessibility.
-   * @param target The object on which the member will be accessed (relevant for Java 9+). Can be {@code null} for
-   *   static members or when checking general accessibility.
-   * @return {@code true} if the member is accessible, {@code false} otherwise.
-   * @throws me.kvdpxne.modjit.exception.ReflectionSecurityException if reflection fails on Java 9+ (e.g., method not
-   *   found or invocation error).
+   * @param member the reflection member to check for accessibility
+   * @param target the object on which the member will be accessed (relevant for Java 9+); can be {@code null} for
+   *   static members or when checking general accessibility
+   * @return {@code true} if the member is accessible, {@code false} otherwise
+   * @throws ReflectionSecurityException if reflection fails on Java 9+ (e.g., method not found or invocation error)
    */
   public static boolean isAccessible(
     final AccessibleObject member,
@@ -152,15 +175,18 @@ public final class AccessController {
   /**
    * Sets the accessibility flag of the given reflection member.
    * <p>
-   * This method handles special cases for Java 12 and above, where setting accessibility for package-private members
-   * might require reflection on the {@code setAccessible} method itself due to module system restrictions. For other
-   * cases, it directly calls {@link java.lang.reflect.AccessibleObject#setAccessible(boolean)}.
+   * This method handles special cases for different Java versions:
    * </p>
+   * <ul>
+   *   <li>Java 11 and below: directly calls {@link AccessibleObject#setAccessible(boolean)}</li>
+   *   <li>Java 12 and above: uses reflection to set accessibility for package-private members
+   *       to handle module system restrictions</li>
+   * </ul>
    *
-   * @param member The reflection member whose accessibility is to be set.
-   * @param flag {@code true} to set the member accessible, {@code false} otherwise.
-   * @throws java.lang.RuntimeException if setting accessibility for a package-private member on Java 12+ fails due to
-   *   reflection restrictions.
+   * @param member the reflection member whose accessibility is to be set
+   * @param flag {@code true} to set the member accessible, {@code false} otherwise
+   * @throws RuntimeException if setting accessibility for a package-private member on Java 12+ fails due to
+   *   reflection restrictions
    */
   public static void setAccessible(
     final AccessibleObject member,
