@@ -4,6 +4,7 @@ import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.List;
 import me.kvdpxne.modjit.exception.ReflectionSecurityException;
 
 /**
@@ -64,22 +65,30 @@ public final class AccessController {
    *   into a valid number
    */
   private static int getSystemJavaVersion() {
-    final String version = System.getProperty("java.version");
-    if (null == version) {
-      throw new IllegalStateException("Unable to determine Java version: system property 'java.version' is null");
-    }
-    final String[] parts = version.split("[._]");
-    for (final String part : parts) {
-      try {
-        final int number = Integer.parseInt(part.trim());
-        if (0 != number) { // Handles cases like "1.8" where the first part might be 1, then 8
-          return number;
-        }
-      } catch (final NumberFormatException ignored) {
-        // Continue to next part if current part is not a number
+    try {
+      final Runtime runtime = Runtime.getRuntime();
+      final Object version = Runtime.class.getMethod("version").invoke(runtime);
+      // noinspection unchecked
+      final List<Integer> parts = (List<Integer>) version.getClass().getMethod("version").invoke(version);
+      return parts.get(0);
+    } catch (final Exception ignore) {
+      final String version = System.getProperty("java.version");
+      if (null == version) {
+        throw new IllegalStateException("Unable to determine Java version: system property 'java.version' is null");
       }
+      final String[] parts = version.split("[._]");
+      for (final String part : parts) {
+        try {
+          final int number = Integer.parseInt(part.trim());
+          if (0 != number) { // Handles cases like "1.8" where the first part might be 1, then 8
+            return number;
+          }
+        } catch (final NumberFormatException ignored) {
+          // Continue to next part if current part is not a number
+        }
+      }
+      throw new IllegalStateException("Unable to parse Java version from string: " + version);
     }
-    throw new IllegalStateException("Unable to parse Java version from string: " + version);
   }
 
   /**
