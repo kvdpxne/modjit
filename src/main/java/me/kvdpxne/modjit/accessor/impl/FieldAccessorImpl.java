@@ -1,4 +1,4 @@
-package me.kvdpxne.modjit.cache.invoker;
+package me.kvdpxne.modjit.accessor.impl;
 
 import java.lang.reflect.Field;
 import java.util.Objects;

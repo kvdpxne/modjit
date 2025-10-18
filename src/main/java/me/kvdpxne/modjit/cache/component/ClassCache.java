@@ -1,5 +1,8 @@
-package me.kvdpxne.modjit.cache;
+package me.kvdpxne.modjit.cache.component;
 
+import me.kvdpxne.modjit.Reflection;
+import me.kvdpxne.modjit.cache.ReflectionCache;
+import me.kvdpxne.modjit.cache.key.ClassKey;
 import me.kvdpxne.modjit.exception.ClassNotFoundReflectionException;
 
 /**
@@ -18,7 +21,7 @@ import me.kvdpxne.modjit.exception.ClassNotFoundReflectionException;
  */
 public final class ClassCache
   extends
-  ReflectionCache<String, Class<?>> {
+  ReflectionCache<ClassKey, Class<?>> {
 
   /**
    * Retrieves a {@link java.lang.Class} object from the cache or computes it by loading the class using its fully
@@ -35,14 +38,28 @@ public final class ClassCache
    * @throws java.lang.NullPointerException if the {@code path} is {@code null}.
    */
   public Class<?> getOrCompute(
-    final String path
+    final String path,
+    final ClassLoader classLoader,
+    final boolean initialize
   ) {
-    return this.getOrCompute(path, () -> {
-      try {
-        return Class.forName(path);
-      } catch (final ClassNotFoundException exception) {
-        throw new ClassNotFoundReflectionException(path, exception);
-      }
-    });
+    final ClassLoader foundClassLoader = null != classLoader
+      ? classLoader
+      : null != Thread.currentThread().getContextClassLoader()
+      ? Thread.currentThread().getContextClassLoader()
+      : Reflection.class.getClassLoader();
+
+    return this.getOrCompute(
+      new ClassKey(
+        path,
+        foundClassLoader,
+        initialize
+      ),
+      () -> {
+        try {
+          return Class.forName(path, initialize, foundClassLoader);
+        } catch (final ClassNotFoundException exception) {
+          throw new ClassNotFoundReflectionException(path, exception);
+        }
+      });
   }
 }

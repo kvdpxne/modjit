@@ -1,8 +1,9 @@
-package me.kvdpxne.modjit.cache;
+package me.kvdpxne.modjit.cache.component;
 
 import java.lang.reflect.Field;
 import me.kvdpxne.modjit.accessor.FieldAccessor;
-import me.kvdpxne.modjit.cache.invoker.FieldAccessorImpl;
+import me.kvdpxne.modjit.cache.ReflectionCache;
+import me.kvdpxne.modjit.accessor.impl.FieldAccessorImpl;
 import me.kvdpxne.modjit.cache.key.FieldKey;
 import me.kvdpxne.modjit.exception.FieldNotFoundReflectionException;
 import me.kvdpxne.modjit.util.AccessController;
@@ -10,7 +11,7 @@ import me.kvdpxne.modjit.util.AccessController;
 /**
  * A specialized {@link me.kvdpxne.modjit.cache.ReflectionCache} for caching
  * {@link me.kvdpxne.modjit.accessor.FieldAccessor} objects. It computes and caches
- * {@link me.kvdpxne.modjit.cache.invoker.FieldAccessorImpl} instances based on a
+ * {@link me.kvdpxne.modjit.accessor.impl.FieldAccessorImpl} instances based on a
  * {@link me.kvdpxne.modjit.cache.key.FieldKey}.
  * <p>
  * This cache ensures that the lookup and preparation of fields via {@link java.lang.Class#getDeclaredFields()} and the
@@ -45,7 +46,7 @@ public final class FieldCache
    * @param emptyModifiers {@code true} if {@code modifiers} was {@code 0}.
    * @return {@code true} if the field matches all specified non-null/zero criteria, {@code false} otherwise.
    */
-  private boolean checkConditions(
+  private static boolean checkConditions(
     final Field field,
     final String name,
     final Class<?> type,
@@ -62,7 +63,7 @@ public final class FieldCache
 
   /**
    * Looks up a declared field within the specified class that matches the given field name, optional field type, and
-   * optional modifiers, and creates a new {@link me.kvdpxne.modjit.cache.invoker.FieldAccessorImpl} for it.
+   * optional modifiers, and creates a new {@link me.kvdpxne.modjit.accessor.impl.FieldAccessorImpl} for it.
    * <p>
    * This method iterates through all declared fields of the class and compares their names, types (if provided), and
    * modifiers (if non-zero). If a matching field is found, it determines the original accessibility state of the field
@@ -75,7 +76,7 @@ public final class FieldCache
    *   criteria.
    * @param type The expected type of the field. Can be {@code null} if the type is not part of the search criteria.
    * @param modifiers The required modifiers for the field. Use {@code 0} to ignore modifiers.
-   * @return A new {@link me.kvdpxne.modjit.cache.invoker.FieldAccessorImpl} instance wrapping the found field.
+   * @return A new {@link me.kvdpxne.modjit.accessor.impl.FieldAccessorImpl} instance wrapping the found field.
    * @throws me.kvdpxne.modjit.exception.FieldNotFoundReflectionException if no field with the specified name (and
    *   type/modifiers if provided/non-zero) is found in the class.
    */
@@ -91,7 +92,7 @@ public final class FieldCache
       nullType = null == type,
       nullName = null == name;
     for (final Field nextField : allFields) {
-      if (this.checkConditions(nextField, name, type, modifiers,
+      if (FieldCache.checkConditions(nextField, name, type, modifiers,
         nullName, nullType, emptyModifiers)
       ) {
         field = nextField;

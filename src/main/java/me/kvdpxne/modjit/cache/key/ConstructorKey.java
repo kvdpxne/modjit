@@ -53,34 +53,6 @@ public final class ConstructorKey {
   }
 
   /**
-   * Retrieves the fully qualified name of the class declaring the associated constructor.
-   *
-   * @return The class name.
-   */
-  public String getClassName() {
-    return this.className;
-  }
-
-  /**
-   * Retrieves the array of strings representing the fully qualified names of the associated constructor's parameter
-   * types.
-   *
-   * @return The parameter type names array. Can be {@code null} if the constructor takes no parameters.
-   */
-  public String[] getParameterTypes() {
-    return this.parameterTypes;
-  }
-
-  /**
-   * Retrieves the modifiers of the associated constructor.
-   *
-   * @return The modifiers.
-   */
-  public int getModifiers() {
-    return this.modifiers;
-  }
-
-  /**
    * Compares this {@code ConstructorKey} with another object for equality. Two instances are considered equal if their
    * class names are equal and their parameter type arrays are deeply equal (using
    * {@link java.util.Arrays#deepEquals(java.lang.Object[], java.lang.Object[])}).

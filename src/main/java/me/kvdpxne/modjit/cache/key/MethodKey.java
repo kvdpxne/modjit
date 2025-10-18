@@ -71,52 +71,6 @@ public final class MethodKey {
   }
 
   /**
-   * Retrieves the fully qualified name of the class declaring the associated method.
-   *
-   * @return The class name.
-   */
-  public String getClassName() {
-    return this.className;
-  }
-
-  /**
-   * Retrieves the simple name of the associated method.
-   *
-   * @return The method name.
-   */
-  public String getMethodName() {
-    return this.methodName;
-  }
-
-  /**
-   * Retrieves the array of strings representing the fully qualified names of the associated method's parameter types.
-   *
-   * @return The parameter type names array. Can be {@code null} if parameter types are not part of the caching
-   *   criteria.
-   */
-  public String[] getParameterTypes() {
-    return this.parameterTypes;
-  }
-
-  /**
-   * Retrieves the fully qualified name of the return type of the associated method.
-   *
-   * @return The return type name, or {@code null} if not specified.
-   */
-  public String getReturnType() {
-    return this.returnType;
-  }
-
-  /**
-   * Retrieves the modifiers of the associated method.
-   *
-   * @return The modifiers.
-   */
-  public int getModifiers() {
-    return this.modifiers;
-  }
-
-  /**
    * Compares this {@code MethodKey} with another object for equality. Two instances are considered equal if their class
    * names, method names, parameter type arrays (compared deeply), and return types are all equal according to
    * {@link java.util.Objects#equals(java.lang.Object, java.lang.Object)}.

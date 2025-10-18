@@ -1,4 +1,4 @@
-package me.kvdpxne.modjit.cache.invoker;
+package me.kvdpxne.modjit.accessor.impl;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

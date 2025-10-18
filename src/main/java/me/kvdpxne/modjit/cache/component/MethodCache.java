@@ -1,9 +1,10 @@
-package me.kvdpxne.modjit.cache;
+package me.kvdpxne.modjit.cache.component;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import me.kvdpxne.modjit.accessor.MethodInvoker;
-import me.kvdpxne.modjit.cache.invoker.MethodInvokerImpl;
+import me.kvdpxne.modjit.cache.ReflectionCache;
+import me.kvdpxne.modjit.accessor.impl.MethodInvokerImpl;
 import me.kvdpxne.modjit.cache.key.MethodKey;
 import me.kvdpxne.modjit.exception.MethodNotFoundReflectionException;
 import me.kvdpxne.modjit.util.AccessController;
@@ -12,7 +13,7 @@ import me.kvdpxne.modjit.util.ArrayMapper;
 /**
  * A specialized {@link me.kvdpxne.modjit.cache.ReflectionCache} for caching
  * {@link me.kvdpxne.modjit.accessor.MethodInvoker} objects. It computes and caches
- * {@link me.kvdpxne.modjit.cache.invoker.MethodInvokerImpl} instances based on a
+ * {@link me.kvdpxne.modjit.accessor.impl.MethodInvokerImpl} instances based on a
  * {@link me.kvdpxne.modjit.cache.key.MethodKey}.
  * <p>
  * This cache ensures that the lookup and preparation of methods via {@link java.lang.Class#getDeclaredMethods()} and
@@ -50,7 +51,7 @@ public final class MethodCache
    * @param emptyModifiers {@code true} if {@code modifiers} was {@code 0}.
    * @return {@code true} if the method matches all specified non-null/zero criteria, {@code false} otherwise.
    */
-  private boolean checkConditions(
+  private static boolean checkConditions(
     final Method method,
     final String name,
     final Class<?>[] parameterTypes,
@@ -70,7 +71,7 @@ public final class MethodCache
 
   /**
    * Looks up a declared method within the specified class that matches the given method name, optional parameter types,
-   * and optional return type, and creates a new {@link me.kvdpxne.modjit.cache.invoker.MethodInvokerImpl} for it.
+   * and optional return type, and creates a new {@link me.kvdpxne.modjit.accessor.impl.MethodInvokerImpl} for it.
    * <p>
    * This method iterates through all declared methods of the class and compares their names, parameter types (if
    * provided), and return type (if provided). If a match is found, it determines the original accessibility state of
@@ -86,7 +87,7 @@ public final class MethodCache
    * @param returnType The expected return type of the method. Can be {@code null} if the return type is not part of
    *   the search criteria.
    * @param modifiers The required modifiers for the method. Use {@code 0} to ignore modifiers.
-   * @return A new {@link me.kvdpxne.modjit.cache.invoker.MethodInvokerImpl} instance wrapping the found method.
+   * @return A new {@link me.kvdpxne.modjit.accessor.impl.MethodInvokerImpl} instance wrapping the found method.
    * @throws me.kvdpxne.modjit.exception.MethodNotFoundReflectionException if no method with the specified name,
    *   parameter types (if provided), return type (if provided), and modifiers (if non-zero) is found in the class.
    */
@@ -104,7 +105,7 @@ public final class MethodCache
       nullParameterTypes = null == parameterTypes,
       nullName = null == name;
     for (final Method nextMethod : allMethods) {
-      if (this.checkConditions(nextMethod, name, parameterTypes, returnType, modifiers,
+      if (MethodCache.checkConditions(nextMethod, name, parameterTypes, returnType, modifiers,
         nullName, nullParameterTypes, nullReturnType, emptyModifiers)
       ) {
         method = nextMethod;

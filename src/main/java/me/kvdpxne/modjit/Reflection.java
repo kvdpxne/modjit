@@ -4,13 +4,11 @@ import java.lang.reflect.Modifier;
 import me.kvdpxne.modjit.accessor.ConstructorInitializer;
 import me.kvdpxne.modjit.accessor.FieldAccessor;
 import me.kvdpxne.modjit.accessor.MethodInvoker;
-import me.kvdpxne.modjit.cache.ClassCache;
-import me.kvdpxne.modjit.cache.ConstructorCache;
-import me.kvdpxne.modjit.cache.FieldCache;
-import me.kvdpxne.modjit.cache.MethodCache;
-import static me.kvdpxne.modjit.util.Validation.require;
-import static me.kvdpxne.modjit.util.Validation.requireNotBlank;
-import static me.kvdpxne.modjit.util.Validation.requireNotNull;
+import me.kvdpxne.modjit.cache.component.ClassCache;
+import me.kvdpxne.modjit.cache.component.ConstructorCache;
+import me.kvdpxne.modjit.cache.component.FieldCache;
+import me.kvdpxne.modjit.cache.component.MethodCache;
+import me.kvdpxne.modjit.util.Validation;
 
 /**
  * Provides a high-level, user-friendly, and cached API for Java Reflection.
@@ -22,11 +20,11 @@ import static me.kvdpxne.modjit.util.Validation.requireNotNull;
  * {@link me.kvdpxne.modjit.accessor.ConstructorInitializer} instances for object creation.
  * </p>
  * <p>
- * All reflection operations are performed through internal caches ({@link me.kvdpxne.modjit.cache.ClassCache},
- * {@link me.kvdpxne.modjit.cache.FieldCache}, {@link me.kvdpxne.modjit.cache.MethodCache},
- * {@link me.kvdpxne.modjit.cache.ConstructorCache}) to improve performance by avoiding repeated lookups of reflection
- * objects. It also handles accessibility concerns internally using the
- * {@link me.kvdpxne.modjit.util.AccessController}.
+ * All reflection operations are performed through internal caches
+ * ({@link me.kvdpxne.modjit.cache.component.ClassCache}, {@link me.kvdpxne.modjit.cache.component.FieldCache},
+ * {@link me.kvdpxne.modjit.cache.component.MethodCache}, {@link me.kvdpxne.modjit.cache.component.ConstructorCache}) to
+ * improve performance by avoiding repeated lookups of reflection objects. It also handles accessibility concerns
+ * internally using the {@link me.kvdpxne.modjit.util.AccessController}.
  * </p>
  *
  * @author Łukasz Pietrzak (kvdpxne)
@@ -76,10 +74,26 @@ public final class Reflection {
    * @throws java.lang.IllegalArgumentException if the {@code path} is blank.
    */
   public static Class<?> getClass(
-    final String path
+    final String path,
+    final ClassLoader classLoader,
+    final boolean initialize
   ) {
-    requireNotBlank(path, () -> "Class path cannot be blank. Provide valid path (e.g. 'entity.Player')");
-    return CLASSES.getOrCompute(path);
+    Validation.requireNotBlank(path, () -> "Class path cannot be blank. Provide valid path (e.g. 'entity.Player')");
+    return CLASSES.getOrCompute(path, classLoader, initialize);
+  }
+
+  public static Class<?> getClass(
+    final String path,
+    final ClassLoader classLoader
+  ) {
+    return Reflection.getClass(path, classLoader, true);
+  }
+
+  public static Class<?> getClass(
+    final String path,
+    final boolean initialize
+  ) {
+    return Reflection.getClass(path, null, initialize);
   }
 
   /**
@@ -109,15 +123,15 @@ public final class Reflection {
     final Class<?> fieldType,
     final int modifiers
   ) {
-    requireNotNull(clazz, () -> "Class type cannot be null");
+    Validation.requireNotNull(clazz, () -> "Class type cannot be null");
     final boolean hasName = null != fieldName;
-    require(hasName || null != fieldType || 0 == modifiers,
+    Validation.require(hasName || null != fieldType || 0 == modifiers,
       () -> "At least one of fieldName, fieldType, or modifiers (non-zero) must be specified."
     );
     if (hasName) {
-      requireNotBlank(fieldName, () -> "Field name cannot be blank. Provide valid name (e.g. 'playerConnection')");
+      Validation.requireNotBlank(fieldName, () -> "Field name cannot be blank. Provide valid name (e.g. 'playerConnection')");
     }
-    require(0 == (modifiers & ~Modifier.fieldModifiers()), () -> "Invalid field modifiers specified.");
+    Validation.require(0 == (modifiers & ~Modifier.fieldModifiers()), () -> "Invalid field modifiers specified.");
     return FIELDS.getOrCompute(clazz, fieldName, fieldType, modifiers);
   }
 
@@ -143,7 +157,7 @@ public final class Reflection {
     final String fieldName,
     final Class<?> fieldType
   ) {
-    return getField(clazz, fieldName, fieldType, 0);
+    return Reflection.getField(clazz, fieldName, fieldType, 0);
   }
 
   /**
@@ -169,7 +183,7 @@ public final class Reflection {
     final String fieldName,
     final int modifiers
   ) {
-    return getField(clazz, fieldName, null, modifiers);
+    return Reflection.getField(clazz, fieldName, null, modifiers);
   }
 
   /**
@@ -195,7 +209,7 @@ public final class Reflection {
     final Class<?> fieldType,
     final int modifiers
   ) {
-    return getField(clazz, null, fieldType, modifiers);
+    return Reflection.getField(clazz, null, fieldType, modifiers);
   }
 
   /**
@@ -218,7 +232,7 @@ public final class Reflection {
     final Class<?> clazz,
     final String fieldName
   ) {
-    return getField(clazz, fieldName, null, 0);
+    return Reflection.getField(clazz, fieldName, null, 0);
   }
 
   /**
@@ -241,7 +255,7 @@ public final class Reflection {
     final Class<?> clazz,
     final Class<?> fieldType
   ) {
-    return getField(clazz, null, fieldType, 0);
+    return Reflection.getField(clazz, null, fieldType, 0);
   }
 
   /**
@@ -266,7 +280,7 @@ public final class Reflection {
     final Class<?> clazz,
     final int modifiers
   ) {
-    return getField(clazz, null, null, modifiers);
+    return Reflection.getField(clazz, null, null, modifiers);
   }
 
   /**
@@ -300,15 +314,15 @@ public final class Reflection {
     final Class<?> returnType,
     final int modifiers
   ) {
-    requireNotNull(clazz, () -> "Class type cannot be null");
+    Validation.requireNotNull(clazz, () -> "Class type cannot be null");
     final boolean hasName = null != methodName;
-    require(hasName || null != parameterTypes || null != returnType || 0 == modifiers,
+    Validation.require(hasName || null != parameterTypes || null != returnType || 0 == modifiers,
       () -> "At least one of methodName, parameterTypes, returnType, or modifiers (non-zero) must be specified."
     );
     if (hasName) {
-      requireNotBlank(methodName, () -> "Method name cannot be blank.");
+      Validation.requireNotBlank(methodName, () -> "Method name cannot be blank.");
     }
-    require(0 == (modifiers & ~Modifier.methodModifiers()), () -> "Invalid method modifiers specified.");
+    Validation.require(0 == (modifiers & ~Modifier.methodModifiers()), () -> "Invalid method modifiers specified.");
     return METHODS.getOrCompute(clazz, methodName, parameterTypes, returnType, modifiers);
   }
 
@@ -338,7 +352,7 @@ public final class Reflection {
     final Class<?>[] parameterTypes,
     final Class<?> returnType
   ) {
-    return getMethod(clazz, methodName, parameterTypes, returnType, 0);
+    return Reflection.getMethod(clazz, methodName, parameterTypes, returnType, 0);
   }
 
   /**
@@ -368,7 +382,7 @@ public final class Reflection {
     final Class<?>[] parameterTypes,
     final int modifiers
   ) {
-    return getMethod(clazz, methodName, parameterTypes, null, modifiers);
+    return Reflection.getMethod(clazz, methodName, parameterTypes, null, modifiers);
   }
 
   /**
@@ -398,7 +412,7 @@ public final class Reflection {
     final Class<?> returnType,
     final int modifiers
   ) {
-    return getMethod(clazz, methodName, null, returnType, modifiers);
+    return Reflection.getMethod(clazz, methodName, null, returnType, modifiers);
   }
 
   /**
@@ -430,7 +444,7 @@ public final class Reflection {
     final Class<?> returnType,
     final int modifiers
   ) {
-    return getMethod(clazz, null, parameterTypes, returnType, modifiers);
+    return Reflection.getMethod(clazz, null, parameterTypes, returnType, modifiers);
   }
 
   /**
@@ -456,7 +470,7 @@ public final class Reflection {
     final String methodName,
     final Class<?>[] parameterTypes
   ) {
-    return getMethod(clazz, methodName, parameterTypes, null, 0);
+    return Reflection.getMethod(clazz, methodName, parameterTypes, null, 0);
   }
 
   /**
@@ -482,7 +496,7 @@ public final class Reflection {
     final String methodName,
     final Class<?> returnType
   ) {
-    return getMethod(clazz, methodName, null, returnType, 0);
+    return Reflection.getMethod(clazz, methodName, null, returnType, 0);
   }
 
   /**
@@ -509,7 +523,7 @@ public final class Reflection {
     final String methodName,
     final int modifiers
   ) {
-    return getMethod(clazz, methodName, null, null, modifiers);
+    return Reflection.getMethod(clazz, methodName, null, null, modifiers);
   }
 
   /**
@@ -537,7 +551,7 @@ public final class Reflection {
     final Class<?>[] parameterTypes,
     final Class<?> returnType
   ) {
-    return getMethod(clazz, null, parameterTypes, returnType, 0);
+    return Reflection.getMethod(clazz, null, parameterTypes, returnType, 0);
   }
 
   /**
@@ -566,7 +580,7 @@ public final class Reflection {
     final Class<?>[] parameterTypes,
     final int modifiers
   ) {
-    return getMethod(clazz, null, parameterTypes, null, modifiers);
+    return Reflection.getMethod(clazz, null, parameterTypes, null, modifiers);
   }
 
   /**
@@ -593,7 +607,7 @@ public final class Reflection {
     final Class<?> returnType,
     final int modifiers
   ) {
-    return getMethod(clazz, null, null, returnType, modifiers);
+    return Reflection.getMethod(clazz, null, null, returnType, modifiers);
   }
 
   /**
@@ -617,7 +631,7 @@ public final class Reflection {
     final Class<?> clazz,
     final String methodName
   ) {
-    return getMethod(clazz, methodName, null, null, 0);
+    return Reflection.getMethod(clazz, methodName, null, null, 0);
   }
 
   /**
@@ -642,7 +656,7 @@ public final class Reflection {
     final Class<?> clazz,
     final Class<?>[] parameterTypes
   ) {
-    return getMethod(clazz, null, parameterTypes, null, 0);
+    return Reflection.getMethod(clazz, null, parameterTypes, null, 0);
   }
 
   /**
@@ -665,7 +679,7 @@ public final class Reflection {
     final Class<?> clazz,
     final Class<?> returnType
   ) {
-    return getMethod(clazz, null, null, returnType, 0);
+    return Reflection.getMethod(clazz, null, null, returnType, 0);
   }
 
   /**
@@ -690,7 +704,7 @@ public final class Reflection {
     final Class<?> clazz,
     final int modifiers
   ) {
-    return getMethod(clazz, null, null, null, modifiers);
+    return Reflection.getMethod(clazz, null, null, null, modifiers);
   }
 
   /**
@@ -718,11 +732,11 @@ public final class Reflection {
     final Class<?>[] parameterTypes,
     final int modifiers
   ) {
-    requireNotNull(clazz, () -> "Class type cannot be null");
-    require(null != parameterTypes || 0 != modifiers,
+    Validation.requireNotNull(clazz, () -> "Class type cannot be null");
+    Validation.require(null != parameterTypes || 0 != modifiers,
       () -> "Either parameterTypes or a non-zero modifiers value must be specified."
     );
-    require(0 == (modifiers & ~Modifier.constructorModifiers()), () -> "Invalid constructor modifiers specified.");
+    Validation.require(0 == (modifiers & ~Modifier.constructorModifiers()), () -> "Invalid constructor modifiers specified.");
     return CONSTRUCTORS.getOrCompute(clazz, parameterTypes, modifiers);
   }
 
@@ -746,7 +760,7 @@ public final class Reflection {
     final Class<?> clazz,
     final Class<?>[] parameterTypes
   ) {
-    return getConstructor(clazz, parameterTypes, 0);
+    return Reflection.getConstructor(clazz, parameterTypes, 0);
   }
 
   /**
@@ -770,11 +784,11 @@ public final class Reflection {
     final Class<?> clazz,
     final int modifiers
   ) {
-    return getConstructor(clazz, null, modifiers);
+    return Reflection.getConstructor(clazz, null, modifiers);
   }
 
   /**
-   * Holder class for the singleton {@link me.kvdpxne.modjit.cache.ClassCache} instance. Uses the
+   * Holder class for the singleton {@link me.kvdpxne.modjit.cache.component.ClassCache} instance. Uses the
    * Initialization-on-demand holder idiom for thread-safe lazy loading.
    */
   private static final class ClassesCacheHolder {
@@ -782,7 +796,7 @@ public final class Reflection {
   }
 
   /**
-   * Holder class for the singleton {@link me.kvdpxne.modjit.cache.ConstructorCache} instance. Uses the
+   * Holder class for the singleton {@link me.kvdpxne.modjit.cache.component.ConstructorCache} instance. Uses the
    * Initialization-on-demand holder idiom for thread-safe lazy loading.
    */
   private static final class ConstructorsCacheHolder {
@@ -790,7 +804,7 @@ public final class Reflection {
   }
 
   /**
-   * Holder class for the singleton {@link me.kvdpxne.modjit.cache.FieldCache} instance. Uses the
+   * Holder class for the singleton {@link me.kvdpxne.modjit.cache.component.FieldCache} instance. Uses the
    * Initialization-on-demand holder idiom for thread-safe lazy loading.
    */
   private static final class FieldsCacheHolder {
@@ -798,7 +812,7 @@ public final class Reflection {
   }
 
   /**
-   * Holder class for the singleton {@link me.kvdpxne.modjit.cache.MethodCache} instance. Uses the
+   * Holder class for the singleton {@link me.kvdpxne.modjit.cache.component.MethodCache} instance. Uses the
    * Initialization-on-demand holder idiom for thread-safe lazy loading.
    */
   private static final class MethodsCacheHolder {

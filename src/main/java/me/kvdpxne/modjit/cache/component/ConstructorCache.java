@@ -1,9 +1,10 @@
-package me.kvdpxne.modjit.cache;
+package me.kvdpxne.modjit.cache.component;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import me.kvdpxne.modjit.accessor.ConstructorInitializer;
-import me.kvdpxne.modjit.cache.invoker.ConstructorInitializerImpl;
+import me.kvdpxne.modjit.cache.ReflectionCache;
+import me.kvdpxne.modjit.accessor.impl.ConstructorInitializerImpl;
 import me.kvdpxne.modjit.cache.key.ConstructorKey;
 import me.kvdpxne.modjit.exception.ConstructorNotFoundReflectionException;
 import me.kvdpxne.modjit.util.AccessController;
@@ -12,7 +13,7 @@ import me.kvdpxne.modjit.util.ArrayMapper;
 /**
  * A specialized {@link me.kvdpxne.modjit.cache.ReflectionCache} for caching
  * {@link me.kvdpxne.modjit.accessor.ConstructorInitializer} objects. It computes and caches
- * {@link me.kvdpxne.modjit.cache.invoker.ConstructorInitializerImpl} instances based on a
+ * {@link me.kvdpxne.modjit.accessor.impl.ConstructorInitializerImpl} instances based on a
  * {@link me.kvdpxne.modjit.cache.key.ConstructorKey}.
  * <p>
  * This cache ensures that the lookup and preparation of constructors via
@@ -46,7 +47,7 @@ public final class ConstructorCache
    * @param emptyModifiers {@code true} if {@code modifiers} was {@code 0}.
    * @return {@code true} if the constructor matches all specified non-null/zero criteria, {@code false} otherwise.
    */
-  private boolean checkConditions(
+  private static boolean checkConditions(
     final Constructor<?> constructor,
     final Class<?>[] parameterTypes,
     final int modifiers,
@@ -60,7 +61,7 @@ public final class ConstructorCache
 
   /**
    * Looks up a declared constructor within the specified class that matches the given parameter types and modifiers,
-   * and creates a new {@link me.kvdpxne.modjit.cache.invoker.ConstructorInitializerImpl} for it.
+   * and creates a new {@link me.kvdpxne.modjit.accessor.impl.ConstructorInitializerImpl} for it.
    * <p>
    * This method iterates through all declared constructors of the class and compares their parameter types (if
    * provided) and modifiers (if non-zero). If a match is found, it determines the original accessibility state of the
@@ -72,7 +73,7 @@ public final class ConstructorCache
    * @param parameterTypes An array of {@link java.lang.Class} objects representing the expected parameter types of
    *   the constructor. Can be {@code null} if parameter types are not part of the search criteria.
    * @param modifiers The required modifiers for the constructor. Use {@code 0} to ignore modifiers.
-   * @return A new {@link me.kvdpxne.modjit.cache.invoker.ConstructorInitializerImpl} instance wrapping the found
+   * @return A new {@link me.kvdpxne.modjit.accessor.impl.ConstructorInitializerImpl} instance wrapping the found
    *   constructor.
    * @throws me.kvdpxne.modjit.exception.ConstructorNotFoundReflectionException if no constructor with the specified
    *   parameter types (if provided) and modifiers (if non-zero) is found in the class.
@@ -87,7 +88,7 @@ public final class ConstructorCache
     final boolean emptyModifiers = 0 == modifiers,
       nullParameterTypes = null == parameterTypes;
     for (final Constructor<?> nextConstructor : allConstructors) {
-      if (this.checkConditions(nextConstructor, parameterTypes, modifiers,
+      if (ConstructorCache.checkConditions(nextConstructor, parameterTypes, modifiers,
         nullParameterTypes, emptyModifiers)
       ) {
         constructor = nextConstructor;

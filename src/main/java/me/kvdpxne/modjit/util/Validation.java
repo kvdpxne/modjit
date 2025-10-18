@@ -68,7 +68,7 @@ public final class Validation {
         throw new NullPointerException("The message provider cannot be null");
       }
       String content = message.get();
-      if (null == content || isBlank(content)) {
+      if (null == content || Validation.isBlank(content)) {
         content = "The error message has not been described";
       }
       throw new IllegalArgumentException(content);
@@ -91,7 +91,7 @@ public final class Validation {
     final Object object,
     final Supplier<String> message
   ) {
-    require(null != object, message);
+    Validation.require(null != object, message);
   }
 
   /**
@@ -110,6 +110,6 @@ public final class Validation {
     final String target,
     final Supplier<String> message
   ) {
-    require(null != target && !isBlank(target), message);
+    Validation.require(null != target && !Validation.isBlank(target), message);
   }
 }

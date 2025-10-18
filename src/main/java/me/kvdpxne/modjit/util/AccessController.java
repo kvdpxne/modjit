@@ -4,6 +4,7 @@ import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import me.kvdpxne.modjit.exception.ReflectionSecurityException;
 
 /**
  * Provides utility methods for managing the accessibility of reflection objects
@@ -23,9 +24,14 @@ public final class AccessController {
 
   /**
    * The detected Java version of the runtime environment. This value is determined once during class loading by
-   * {@link #getJavaVersion()}.
+   * {@link #getSystemJavaVersion()}.
    */
-  static final int JAVA_VERSION = getJavaVersion();
+  private static int javaVersion = 0;
+
+  /**
+   *
+   */
+  private static Method canAccessMethod = null;
 
   /**
    * Prevents instantiation of this utility class.
@@ -45,7 +51,7 @@ public final class AccessController {
    * @throws java.lang.IllegalStateException if the {@code java.version} system property is {@code null} or cannot be
    *   parsed into a valid number.
    */
-  private static int getJavaVersion() {
+  private static int getSystemJavaVersion() {
     final String version = System.getProperty("java.version");
     if (null == version) {
       throw new IllegalStateException("Unable to determine Java version: system property 'java.version' is null");
@@ -53,7 +59,7 @@ public final class AccessController {
     final String[] parts = version.split("[._]");
     for (final String part : parts) {
       try {
-        int number = Integer.parseInt(part.trim());
+        final int number = Integer.parseInt(part.trim());
         if (0 != number) { // Handles cases like "1.8" where the first part might be 1, then 8
           return number;
         }
@@ -61,6 +67,13 @@ public final class AccessController {
       }
     }
     throw new IllegalStateException("Unable to parse Java version from string: " + version);
+  }
+
+  public static int getJavaVersion() {
+    if (0 == AccessController.javaVersion) {
+      AccessController.javaVersion = AccessController.getSystemJavaVersion();
+    }
+    return AccessController.javaVersion;
   }
 
   /**
@@ -97,7 +110,7 @@ public final class AccessController {
    * Checks if the given reflection member is accessible for the specified target object.
    * <p>
    * This method handles the difference between pre-Java 9 and Java 9+ APIs. On Java 9 and later, it uses
-   * {@link java.lang.reflect.AccessibleObject#canAccess(java.lang.Object)}. On earlier versions, it uses
+   * {@link java.lang.reflect.AccessibleObject#canAccess(java.lang.Object)} via reflection. On earlier versions, it uses
    * {@link java.lang.reflect.AccessibleObject#isAccessible()}.
    * </p>
    *
@@ -105,15 +118,34 @@ public final class AccessController {
    * @param target The object on which the member will be accessed (relevant for Java 9+). Can be {@code null} for
    *   static members or when checking general accessibility.
    * @return {@code true} if the member is accessible, {@code false} otherwise.
+   * @throws me.kvdpxne.modjit.exception.ReflectionSecurityException if reflection fails on Java 9+ (e.g., method not
+   *   found or invocation error).
    */
   public static boolean isAccessible(
     final AccessibleObject member,
     final Object target
   ) {
-//    if (9 <= JAVA_VERSION) {
-//      // noinspection Since15
-//      return member.canAccess(target);
-//    }
+    if (9 <= AccessController.getJavaVersion()) {
+      try {
+        if (null != AccessController.canAccessMethod) {
+          return (boolean) AccessController.canAccessMethod.invoke(member, target);
+        }
+        // noinspection JavaReflectionMemberAccess
+        final Method canAccessMethod = AccessibleObject.class.getMethod("canAccess", Object.class);
+        AccessController.canAccessMethod = canAccessMethod;
+        return (boolean) canAccessMethod.invoke(member, target);
+      } catch (final NoSuchMethodException exception) {
+        throw new ReflectionSecurityException(
+          "Method 'canAccess(Object)' not found in AccessibleObject (expected in Java 9+)",
+          exception
+        );
+      } catch (final ReflectiveOperationException exception) {
+        throw new ReflectionSecurityException(
+          "Failed to invoke 'canAccess(Object)' on AccessibleObject",
+          exception
+        );
+      }
+    }
     return member.isAccessible();
   }
 
@@ -134,20 +166,20 @@ public final class AccessController {
     final AccessibleObject member,
     final boolean flag
   ) {
-    if (12 <= JAVA_VERSION && flag && isPackagePrivate(member)) {
-      // Special handling for Java 12+ package-private members
-      try {
-        member.getClass()
-          .getDeclaredMethod("setAccessible", boolean.class)
-          .invoke(member, true);
-      } catch (final ReflectiveOperationException exception) {
-        throw new RuntimeException(
-          "Cannot make package-private member accessible in Java " + JAVA_VERSION,
-          exception
-        );
-      }
+    if (12 > AccessController.getJavaVersion() || !flag || !AccessController.isPackagePrivate(member)) {
+      member.setAccessible(flag);
       return;
     }
-    member.setAccessible(flag);
+    // Special handling for Java 12+ package-private members
+    try {
+      member.getClass()
+        .getDeclaredMethod("setAccessible", boolean.class)
+        .invoke(member, true);
+    } catch (final ReflectiveOperationException exception) {
+      throw new RuntimeException(
+        "Cannot make package-private member accessible in Java " + AccessController.javaVersion,
+        exception
+      );
+    }
   }
 }

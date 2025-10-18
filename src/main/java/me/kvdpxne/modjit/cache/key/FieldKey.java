@@ -60,42 +60,6 @@ public final class FieldKey {
   }
 
   /**
-   * Retrieves the fully qualified name of the class declaring the associated field.
-   *
-   * @return The class name.
-   */
-  public String getClassName() {
-    return this.className;
-  }
-
-  /**
-   * Retrieves the simple name of the associated field.
-   *
-   * @return The field name.
-   */
-  public String getFieldName() {
-    return this.fieldName;
-  }
-
-  /**
-   * Retrieves the fully qualified name of the type of the associated field.
-   *
-   * @return The field type name, or {@code null} if not specified.
-   */
-  public String getFieldType() {
-    return this.fieldType;
-  }
-
-  /**
-   * Retrieves the modifiers of the associated field.
-   *
-   * @return The modifiers.
-   */
-  public int getModifiers() {
-    return this.modifiers;
-  }
-
-  /**
    * Compares this {@code FieldKey} with another object for equality. Two instances are considered equal if their class
    * names, field names, and field types are all equal according to
    * {@link java.util.Objects#equals(java.lang.Object, java.lang.Object)}.
