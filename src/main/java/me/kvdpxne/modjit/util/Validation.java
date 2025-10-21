@@ -58,6 +58,19 @@ public final class Validation {
     return str.length() == size;
   }
 
+  private static String getProvidedMessageOrDefault(
+    final Supplier<String> messageProvider
+  ) {
+    if (null == messageProvider) {
+      throw new NullPointerException("The message provider cannot be null.");
+    }
+    String message = messageProvider.get();
+    if (null == message || Validation.isBlank(message)) {
+      message = "The error message has not been described";
+    }
+    return message;
+  }
+
   /**
    * Validates that the given condition is {@code true}.
    * <p>
@@ -82,14 +95,9 @@ public final class Validation {
     final Supplier<String> message
   ) {
     if (!condition) {
-      if (null == message) {
-        throw new NullPointerException("The message provider cannot be null");
-      }
-      String content = message.get();
-      if (null == content || Validation.isBlank(content)) {
-        content = "The error message has not been described";
-      }
-      throw new IllegalArgumentException(content);
+      throw new IllegalArgumentException(
+        Validation.getProvidedMessageOrDefault(message)
+      );
     }
   }
 
@@ -143,5 +151,23 @@ public final class Validation {
     final Supplier<String> message
   ) {
     Validation.require(null != target && !Validation.isBlank(target), message);
+  }
+
+  public static void check(
+    final boolean condition,
+    final Supplier<String> message
+  ) {
+    if (!condition) {
+      throw new IllegalStateException(
+        Validation.getProvidedMessageOrDefault(message)
+      );
+    }
+  }
+
+  public static void checkNotNull(
+    final Object object,
+    final Supplier<String> message
+  ) {
+    Validation.check(null != object, message);
   }
 }
