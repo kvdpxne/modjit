@@ -4,6 +4,7 @@ import java.lang.reflect.Modifier;
 import me.kvdpxne.modjit.accessor.ConstructorInitializer;
 import me.kvdpxne.modjit.accessor.FieldAccessor;
 import me.kvdpxne.modjit.accessor.MethodInvoker;
+import me.kvdpxne.modjit.fluent.builder.ClassBuilder;
 import me.kvdpxne.modjit.fluent.builder.ConstructorBuilder;
 import me.kvdpxne.modjit.fluent.builder.FieldBuilder;
 import me.kvdpxne.modjit.fluent.builder.MethodBuilder;
@@ -203,6 +204,10 @@ public final class Reflection {
     final String path
   ) {
     return Reflection.getClass(path, null, true);
+  }
+
+  public static ClassBuilder newClassFinder() {
+    return new ClassBuilder();
   }
 
   /**
