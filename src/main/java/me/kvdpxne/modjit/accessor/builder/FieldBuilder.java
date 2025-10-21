@@ -13,7 +13,7 @@ import me.kvdpxne.modjit.util.Validation;
  * @version 0.1.0
  * @since 0.1.0
  */
-public final class FieldBuilder
+public class FieldBuilder
   implements
   Buildable<FieldAccessor> {
 
